@@ -39,17 +39,32 @@ const DepartmentHomePage = () => {
   const handleSubmitUpdate = async (issueId) => {
     const comment = commentDrafts[issueId];
     const status = statusDrafts[issueId];
+    
+    // Find the current issue to check if status actually changed
+    const currentIssue = departmentIssues.find(i => i._id === issueId);
+    const statusChanged = status && currentIssue && status !== currentIssue.status;
 
-    if (!comment && !status) return;
+    if (!comment && !statusChanged) {
+      alert('Please enter a comment or change the status to submit an update.');
+      return;
+    }
 
-    await dispatch(
-      departmentUpdateIssue({
-        id: issueId,
-        data: { comment: comment || undefined, status: status || undefined },
-      })
-    ).unwrap();
+    try {
+      await dispatch(
+        departmentUpdateIssue({
+          id: issueId,
+          data: { 
+            comment: comment || undefined, 
+            status: statusChanged ? status : undefined 
+          },
+        })
+      ).unwrap();
 
-    setCommentDrafts((prev) => ({ ...prev, [issueId]: '' }));
+      setCommentDrafts((prev) => ({ ...prev, [issueId]: '' }));
+      setStatusDrafts((prev) => ({ ...prev, [issueId]: '' }));
+    } catch (err) {
+      alert(err || 'Failed to submit update. Please make sure you have permission to update this issue.');
+    }
   };
 
   const formatDateTime = (iso) => {

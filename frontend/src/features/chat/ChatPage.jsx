@@ -25,17 +25,64 @@ const ChatPage = () => {
     if (!input.trim()) return;
 
     const text = input.trim();
-    setInput('');
-    dispatch(addUserMessage(text));
-
     const currentStep = steps[stepIndex];
+    
     if (currentStep) {
       let value = text;
+      
+      // Validate severity input
+      if (currentStep.key === 'severity') {
+        const validSeverities = ['low', 'medium', 'high', 'critical'];
+        if (!validSeverities.includes(text.toLowerCase())) {
+          dispatch(addUserMessage(text));
+          dispatch({
+            type: 'chat/addSystemMessage',
+            payload: `Sorry, "${text}" is not a valid severity level. Please choose one of: low, medium, high, or critical.`,
+          });
+          setInput('');
+          return;
+        }
+        value = text.toLowerCase();
+      }
+      
+      // Validate recurrence input
+      if (currentStep.key === 'recurrence') {
+        const validRecurrences = ['new', 'recurring', 'ongoing'];
+        if (!validRecurrences.includes(text.toLowerCase())) {
+          dispatch(addUserMessage(text));
+          dispatch({
+            type: 'chat/addSystemMessage',
+            payload: `Sorry, "${text}" is not a valid option. Please choose one of: new, recurring, or ongoing.`,
+          });
+          setInput('');
+          return;
+        }
+        value = text.toLowerCase();
+      }
+      
+      // Validate email format (if not skipping)
+      if (currentStep.key === 'contactEmail' && text.toLowerCase() !== 'skip') {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(text)) {
+          dispatch(addUserMessage(text));
+          dispatch({
+            type: 'chat/addSystemMessage',
+            payload: `Sorry, "${text}" doesn't look like a valid email address. Please enter a valid email or type "skip" to continue.`,
+          });
+          setInput('');
+          return;
+        }
+      }
+      
+      // Handle skippable fields
       if (['landmark', 'contactName', 'contactPhone', 'contactEmail'].includes(currentStep.key)) {
         if (text.toLowerCase() === 'skip') {
           value = '';
         }
       }
+      
+      setInput('');
+      dispatch(addUserMessage(text));
       dispatch(captureAnswer({ key: currentStep.key, value }));
 
       if (stepIndex < steps.length - 1) {

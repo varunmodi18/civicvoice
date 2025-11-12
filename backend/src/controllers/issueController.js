@@ -193,7 +193,11 @@ const addDepartmentUpdate = async (req, res) => {
     return res.status(404).json({ message: 'Issue not found' });
   }
 
-  if (!issue.forwardedTo || issue.forwardedTo.toString() !== req.user.department.toString()) {
+  // Get the department ID - handle both populated object and direct ID
+  const userDeptId = req.user.department._id ? req.user.department._id.toString() : req.user.department.toString();
+  const issueForwardedToId = issue.forwardedTo ? issue.forwardedTo.toString() : null;
+
+  if (!issueForwardedToId || issueForwardedToId !== userDeptId) {
     return res
       .status(403)
       .json({ message: 'Issue is not assigned to your department' });
@@ -212,7 +216,7 @@ const addDepartmentUpdate = async (req, res) => {
       text: comment,
       status: status || issue.status,
       addedBy: req.user._id,
-      department: req.user.department,
+      department: req.user.department._id || req.user.department,
     });
   }
 
