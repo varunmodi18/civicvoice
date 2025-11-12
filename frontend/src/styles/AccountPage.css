@@ -1,64 +1,123 @@
-
 .account-page {
   width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
 }
 
 .account-card {
-  padding: 1rem 1.1rem 1rem;
+  padding: 2rem;
 }
 
 .account-header {
   display: flex;
   justify-content: space-between;
-  gap: 0.75rem;
-  margin-bottom: 0.6rem;
+  align-items: flex-start;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.account-header-content {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.account-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+  flex-shrink: 0;
 }
 
 .account-header h2 {
   margin: 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #f1f5f9;
 }
 
 .account-header p {
-  margin: 0.1rem 0 0;
-  font-size: 0.82rem;
-  color: #9ca3af;
+  margin: 0.5rem 0 0;
+  font-size: 0.9375rem;
+  color: #94a3b8;
 }
 
 .account-identity {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  gap: 0.25rem;
-  font-size: 0.8rem;
+  gap: 0.5rem;
+}
+
+.account-email {
+  font-size: 0.875rem;
+  color: #cbd5e1;
 }
 
 .account-tabs {
   display: flex;
-  gap: 0.4rem;
-  margin-bottom: 0.5rem;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border-subtle);
 }
 
 .account-tab {
-  border-radius: 999px;
-  border: 1px solid rgba(148, 163, 184, 0.75);
-  padding: 0.3rem 0.75rem;
-  background: rgba(15, 23, 42, 0.96);
-  color: #e5e7eb;
-  font-size: 0.8rem;
+  border-radius: 8px;
+  border: 1px solid var(--border-medium);
+  padding: 0.625rem 1rem;
+  background: rgba(15, 23, 42, 0.6);
+  color: #cbd5e1;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.account-tab:hover {
+  background: rgba(15, 23, 42, 0.8);
+  border-color: var(--accent);
 }
 
 .account-tab.active {
-  background: rgba(15, 23, 42, 1);
+  background: rgba(59, 130, 246, 0.15);
   border-color: var(--accent);
+  color: #60a5fa;
 }
 
 .account-content {
   display: flex;
   flex-direction: column;
-  gap: 0.7rem;
+  gap: 1.5rem;
 }
 
 .account-actions {
   display: flex;
   justify-content: flex-end;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border-subtle);
+}
+
+@media (max-width: 768px) {
+  .account-card {
+    padding: 1.5rem;
+  }
+
+  .account-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .account-identity {
+    align-items: flex-start;
+  }
 }

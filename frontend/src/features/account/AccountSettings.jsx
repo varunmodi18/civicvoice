@@ -1,7 +1,7 @@
-
 import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { changePassword } from '@/features/auth/authSlice';
+import { Eye, EyeOff, Lock, CheckCircle, XCircle } from 'lucide-react';
 import '@/styles/AccountSettings.css';
 
 const AccountSettings = () => {
@@ -29,18 +29,25 @@ const AccountSettings = () => {
 
   return (
     <div className="account-settings">
-      <h3>Change password</h3>
+      <div className="settings-header">
+        <Lock size={20} />
+        <h3>Change Password</h3>
+      </div>
       <p className="settings-text">
         Use a strong password with a mix of letters, numbers, and symbols.
       </p>
       <form className="settings-form" onSubmit={onSubmit}>
         <div className="form-group">
-          <label>Current password</label>
+          <label>
+            <Lock size={14} />
+            Current password
+          </label>
           <div className="password-wrapper">
             <input
               type={showCurrent ? 'text' : 'password'}
               value={currentPassword}
               onChange={(e) => setCurrentPassword(e.target.value)}
+              placeholder="••••••••"
               required
             />
             <button
@@ -48,17 +55,21 @@ const AccountSettings = () => {
               className="eye-btn"
               onClick={() => setShowCurrent((v) => !v)}
             >
-              {showCurrent ? '🙈' : '👁️'}
+              {showCurrent ? <EyeOff size={18} /> : <Eye size={18} />}
             </button>
           </div>
         </div>
         <div className="form-group">
-          <label>New password</label>
+          <label>
+            <Lock size={14} />
+            New password
+          </label>
           <div className="password-wrapper">
             <input
               type={showNew ? 'text' : 'password'}
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
+              placeholder="••••••••"
               required
             />
             <button
@@ -66,16 +77,26 @@ const AccountSettings = () => {
               className="eye-btn"
               onClick={() => setShowNew((v) => !v)}
             >
-              {showNew ? '🙈' : '👁️'}
+              {showNew ? <EyeOff size={18} /> : <Eye size={18} />}
             </button>
           </div>
         </div>
         <button type="submit" className="secondary-btn">
-          Update password
+          Update Password
         </button>
       </form>
-      {message && <p className="settings-message ok">{message}</p>}
-      {error && <p className="settings-message error">{error}</p>}
+      {message && (
+        <p className="settings-message ok">
+          <CheckCircle size={16} />
+          {message}
+        </p>
+      )}
+      {error && (
+        <p className="settings-message error">
+          <XCircle size={16} />
+          {error}
+        </p>
+      )}
     </div>
   );
 };

@@ -1,7 +1,7 @@
-
 import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { submitIssue } from '@/features/chat/chatSlice';
+import { FileText, MapPin, Landmark, AlertCircle, MessageSquare, CheckCircle, XCircle } from 'lucide-react';
 import '@/styles/CitizenIssueForm.css';
 
 const CitizenIssueForm = () => {
@@ -41,23 +41,36 @@ const CitizenIssueForm = () => {
 
   return (
     <div className="issue-form-card glass fade-in">
-      <h3>Quick issue form</h3>
-      <p className="issue-form-text">
-        Prefer forms over chat? Capture the essentials here in a few fields.
-      </p>
+      <div className="issue-form-header">
+        <div className="issue-form-icon">
+          <FileText size={20} />
+        </div>
+        <div>
+          <h3>Quick Issue Form</h3>
+          <p className="issue-form-text">
+            Prefer forms over chat? Capture the essentials here.
+          </p>
+        </div>
+      </div>
       <form className="issue-form" onSubmit={onSubmit}>
         <div className="form-group">
-          <label>Issue type</label>
+          <label>
+            <AlertCircle size={14} />
+            Issue type
+          </label>
           <input
             name="issueType"
             value={form.issueType}
             onChange={onChange}
-            placeholder="Pothole, streetlight, sewage…"
+            placeholder="Pothole, streetlight, sewage..."
             required
           />
         </div>
         <div className="form-group">
-          <label>Location</label>
+          <label>
+            <MapPin size={14} />
+            Location
+          </label>
           <input
             name="location"
             value={form.location}
@@ -67,7 +80,10 @@ const CitizenIssueForm = () => {
           />
         </div>
         <div className="form-group">
-          <label>Landmark (optional)</label>
+          <label>
+            <Landmark size={14} />
+            Landmark (optional)
+          </label>
           <input
             name="landmark"
             value={form.landmark}
@@ -76,7 +92,10 @@ const CitizenIssueForm = () => {
           />
         </div>
         <div className="form-group">
-          <label>Severity</label>
+          <label>
+            <AlertCircle size={14} />
+            Severity
+          </label>
           <select name="severity" value={form.severity} onChange={onChange}>
             <option value="low">Low</option>
             <option value="medium">Medium</option>
@@ -85,7 +104,10 @@ const CitizenIssueForm = () => {
           </select>
         </div>
         <div className="form-group">
-          <label>Description</label>
+          <label>
+            <MessageSquare size={14} />
+            Description
+          </label>
           <textarea
             name="description"
             value={form.description}
@@ -96,11 +118,21 @@ const CitizenIssueForm = () => {
           />
         </div>
         <button type="submit" className="primary-btn w-full">
-          Submit issue
+          Submit Issue
         </button>
       </form>
-      {message && <p className="issue-form-message ok">{message}</p>}
-      {error && <p className="issue-form-message error">{error}</p>}
+      {message && (
+        <p className="issue-form-message ok">
+          <CheckCircle size={16} />
+          {message}
+        </p>
+      )}
+      {error && (
+        <p className="issue-form-message error">
+          <XCircle size={16} />
+          {error}
+        </p>
+      )}
     </div>
   );
 };

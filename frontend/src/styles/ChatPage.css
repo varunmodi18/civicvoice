@@ -1,48 +1,78 @@
-
 .chat-card {
-  padding: 1.1rem 1.1rem 1rem;
+  padding: 1.5rem;
   height: 100%;
   display: flex;
   flex-direction: column;
+  min-height: 500px;
 }
 
 .chat-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.chat-header-content {
+  display: flex;
+  align-items: center;
   gap: 0.75rem;
-  margin-bottom: 0.6rem;
+}
+
+.chat-header-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
 }
 
 .chat-header h3 {
   margin: 0;
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #f1f5f9;
 }
 
 .chat-header p {
-  margin: 0.1rem 0 0;
-  font-size: 0.8rem;
-  color: #9ca3af;
+  margin: 0.25rem 0 0;
+  font-size: 0.875rem;
+  color: #94a3b8;
 }
 
 .chat-user-pill {
-  font-size: 0.75rem;
-  border-radius: 999px;
-  padding: 0.2rem 0.6rem;
-  border: 1px solid rgba(148, 163, 184, 0.8);
-  background: rgba(15, 23, 42, 0.98);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  border-radius: 8px;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--border-medium);
+  background: rgba(15, 23, 42, 0.6);
+  color: #cbd5e1;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .chat-body {
   flex: 1;
   overflow-y: auto;
-  padding: 0.6rem 0.15rem 0.6rem;
+  padding: 1rem 0;
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
+  gap: 1rem;
+  min-height: 0;
 }
 
 .chat-bubble-wrapper {
   display: flex;
+  animation: slide-up 0.3s ease-out;
 }
 
 .chat-bubble-wrapper.align-right {
@@ -54,45 +84,71 @@
 }
 
 .chat-bubble {
-  max-width: 78%;
-  padding: 0.45rem 0.7rem;
-  border-radius: 1rem;
-  font-size: 0.85rem;
-  line-height: 1.35;
-  animation: fade-in 0.25s ease-out;
+  max-width: 75%;
+  padding: 0.875rem 1rem;
+  border-radius: 12px;
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  display: flex;
+  gap: 0.625rem;
+  align-items: flex-start;
 }
 
 .chat-bubble.from-user {
-  background: linear-gradient(135deg, #38bdf8, #0ea5e9);
-  color: #0b1120;
-  border-bottom-right-radius: 0.2rem;
-  box-shadow: 0 10px 26px rgba(56, 189, 248, 0.7);
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  color: white;
+  border-bottom-right-radius: 4px;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.chat-bubble.from-user .chat-bubble-text {
+  font-weight: 500;
 }
 
 .chat-bubble.from-system {
-  background: rgba(15, 23, 42, 0.98);
-  border: 1px solid rgba(148, 163, 184, 0.7);
-  border-bottom-left-radius: 0.2rem;
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid var(--border-medium);
+  border-bottom-left-radius: 4px;
+  color: #e2e8f0;
+}
+
+.chat-bubble-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  background: rgba(59, 130, 246, 0.15);
+  color: #60a5fa;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.chat-bubble-text {
+  flex: 1;
 }
 
 .chat-footer {
-  margin-top: 0.5rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border-subtle);
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
+  gap: 0.75rem;
 }
 
 .chat-actions-row {
   display: flex;
   justify-content: space-between;
-  gap: 0.4rem;
+  gap: 0.75rem;
   align-items: center;
 }
 
 .file-btn {
   position: relative;
   overflow: hidden;
-  font-size: 0.78rem;
+  font-size: 0.875rem;
 }
 
 .file-btn input[type='file'] {
@@ -104,10 +160,48 @@
 
 .chat-input-row {
   display: flex;
-  gap: 0.4rem;
+  gap: 0.75rem;
   align-items: center;
 }
 
 .chat-input-row input {
   flex: 1;
+}
+
+.chat-input-row .primary-btn {
+  padding: 0.625rem 1rem;
+}
+
+.spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 768px) {
+  .chat-card {
+    padding: 1rem;
+    min-height: 400px;
+  }
+
+  .chat-bubble {
+    max-width: 85%;
+  }
+
+  .chat-actions-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .file-btn,
+  .ghost-btn {
+    width: 100%;
+  }
 }

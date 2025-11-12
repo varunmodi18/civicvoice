@@ -1,9 +1,9 @@
-
 import React from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import AccountSettings from './AccountSettings';
 import { logout } from '@/features/auth/authSlice';
+import { User, LogOut, Settings } from 'lucide-react';
 import '@/styles/AccountPage.css';
 
 const AccountPage = () => {
@@ -24,24 +24,33 @@ const AccountPage = () => {
     <div className="account-page">
       <div className="account-card glass slide-up">
         <div className="account-header">
-          <div>
-            <h2>My account</h2>
-            <p>Manage your CivicVoice profile and security.</p>
+          <div className="account-header-content">
+            <div className="account-icon">
+              <User size={24} />
+            </div>
+            <div>
+              <h2>My Account</h2>
+              <p>Manage your CivicVoice profile and security</p>
+            </div>
           </div>
           <div className="account-identity">
             <span className="role-pill">{user?.role}</span>
-            <span>{user?.email}</span>
+            <span className="account-email">{user?.email}</span>
           </div>
         </div>
 
         <div className="account-tabs">
-          <button className="account-tab active">Account</button>
+          <button className="account-tab active">
+            <Settings size={14} />
+            Account Settings
+          </button>
         </div>
 
         <div className="account-content">
           <AccountSettings />
           <div className="account-actions">
             <button type="button" className="ghost-btn" onClick={handleLogout}>
+              <LogOut size={16} />
               Logout
             </button>
           </div>

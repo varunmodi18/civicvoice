@@ -1,8 +1,8 @@
-
 import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { login, register } from './authSlice';
+import { Eye, EyeOff, User, Mail, Lock } from 'lucide-react';
 import '@/styles/LoginPage.css';
 
 const CitizenLoginPage = () => {
@@ -34,7 +34,10 @@ const CitizenLoginPage = () => {
     <div className="auth-page">
       <div className="auth-card glass fade-in">
         <div className="auth-card-header">
-          <h2>Citizen access</h2>
+          <div className="auth-icon citizen">
+            <User size={24} />
+          </div>
+          <h2>Citizen Access</h2>
           <p>
             Report civic issues via chat or quick form and track their status
             visually.
@@ -61,7 +64,10 @@ const CitizenLoginPage = () => {
         <form className="auth-form" onSubmit={onSubmit}>
           {mode === 'register' && (
             <div className="form-group">
-              <label>Full name</label>
+              <label>
+                <User size={14} />
+                Full name
+              </label>
               <input
                 type="text"
                 value={name}
@@ -72,7 +78,10 @@ const CitizenLoginPage = () => {
             </div>
           )}
           <div className="form-group">
-            <label>Email</label>
+            <label>
+              <Mail size={14} />
+              Email
+            </label>
             <input
               type="email"
               value={email}
@@ -82,7 +91,10 @@ const CitizenLoginPage = () => {
             />
           </div>
           <div className="form-group">
-            <label>Password</label>
+            <label>
+              <Lock size={14} />
+              Password
+            </label>
             <div className="password-wrapper">
               <input
                 type={showPassword ? 'text' : 'password'}
@@ -96,7 +108,7 @@ const CitizenLoginPage = () => {
                 className="eye-btn"
                 onClick={() => setShowPassword((v) => !v)}
               >
-                {showPassword ? '🙈' : '👁️'}
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
             </div>
           </div>
@@ -107,7 +119,7 @@ const CitizenLoginPage = () => {
             disabled={status === 'loading'}
           >
             {status === 'loading'
-              ? 'Please wait…'
+              ? 'Please wait...'
               : mode === 'login'
               ? 'Login as citizen'
               : 'Create citizen account'}
@@ -116,7 +128,7 @@ const CitizenLoginPage = () => {
 
         <div className="auth-hint">
           <p>
-            Seeded citizen: <code>citizen1@civicvoice.local</code> /{' '}
+            Demo account: <code>citizen1@civicvoice.local</code> /{' '}
             <code>Citizen@123</code>
           </p>
         </div>

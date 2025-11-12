@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import {
@@ -10,6 +9,7 @@ import {
   submitIssue,
   uploadEvidence,
 } from './chatSlice';
+import { MessageSquare, Send, Paperclip, RotateCcw, Loader2, User, Bot } from 'lucide-react';
 import '@/styles/ChatPage.css';
 
 const ChatPage = () => {
@@ -71,13 +71,19 @@ const ChatPage = () => {
   return (
     <div className="chat-card glass slide-up">
       <div className="chat-header">
-        <div>
-          <h3>Civic assistant</h3>
-          <p>Answer a few guided questions to file a detailed complaint.</p>
+        <div className="chat-header-content">
+          <div className="chat-header-icon">
+            <MessageSquare size={20} />
+          </div>
+          <div>
+            <h3>Civic Assistant</h3>
+            <p>Answer guided questions to file a detailed complaint</p>
+          </div>
         </div>
         {user && (
           <span className="chat-user-pill">
-            Logged in as <strong>{user.name}</strong>
+            <User size={12} />
+            {user.name}
           </span>
         )}
       </div>
@@ -89,7 +95,12 @@ const ChatPage = () => {
             className={`chat-bubble-wrapper ${m.from === 'user' ? 'align-right' : 'align-left'}`}
           >
             <div className={`chat-bubble ${m.from === 'user' ? 'from-user' : 'from-system'}`}>
-              {m.text}
+              {m.from === 'system' && (
+                <div className="chat-bubble-icon">
+                  <Bot size={16} />
+                </div>
+              )}
+              <div className="chat-bubble-text">{m.text}</div>
             </div>
           </div>
         ))}
@@ -98,28 +109,44 @@ const ChatPage = () => {
       <div className="chat-footer">
         <div className="chat-actions-row">
           <label className="secondary-btn file-btn">
-            {uploading ? 'Uploading…' : 'Attach photo/video'}
+            {uploading ? (
+              <>
+                <Loader2 size={16} className="spin" />
+                Uploading...
+              </>
+            ) : (
+              <>
+                <Paperclip size={16} />
+                Attach evidence
+              </>
+            )}
             <input type="file" onChange={handleFileChange} disabled={uploading} />
           </label>
           {lastIssue && (
             <button type="button" className="ghost-btn" onClick={handleReset}>
-              File another complaint
+              <RotateCcw size={16} />
+              New complaint
             </button>
           )}
         </div>
         <form className="chat-input-row" onSubmit={handleSend}>
           <input
             type="text"
-            placeholder="Type your reply here…"
+            placeholder="Type your reply here..."
             value={input}
             onChange={(e) => setInput(e.target.value)}
+            disabled={status === 'loading'}
           />
           <button
             type="submit"
             className="primary-btn"
-            disabled={status === 'loading'}
+            disabled={status === 'loading' || !input.trim()}
           >
-            {status === 'loading' ? 'Sending…' : 'Send'}
+            {status === 'loading' ? (
+              <Loader2 size={18} className="spin" />
+            ) : (
+              <Send size={18} />
+            )}
           </button>
         </form>
       </div>
