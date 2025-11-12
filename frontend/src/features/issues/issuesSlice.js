@@ -30,6 +30,20 @@ export const updateIssue = createAsyncThunk(
   }
 );
 
+export const deleteIssue = createAsyncThunk(
+  'issues/delete',
+  async (id, thunkAPI) => {
+    try {
+      const res = await api.delete(`/issues/${id}`);
+      return res.data;
+    } catch (err) {
+      return thunkAPI.rejectWithValue(
+        err.response?.data?.message || 'Failed to delete issue'
+      );
+    }
+  }
+);
+
 export const fetchDepartments = createAsyncThunk(
   'issues/fetchDepartments',
   async (_, thunkAPI) => {
@@ -171,6 +185,10 @@ const issuesSlice = createSlice({
       .addCase(updateIssue.fulfilled, (state, action) => {
         const idx = state.items.findIndex((i) => i._id === action.payload._id);
         if (idx !== -1) state.items[idx] = action.payload;
+      })
+      .addCase(deleteIssue.fulfilled, (state, action) => {
+        const id = action.payload.id;
+        state.items = state.items.filter((i) => i._id !== id);
       })
       .addCase(fetchDepartments.fulfilled, (state, action) => {
         state.departments = action.payload;

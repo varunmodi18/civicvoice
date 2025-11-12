@@ -4,6 +4,7 @@ import {
   fetchIssues,
   fetchDepartments,
   updateIssue,
+  deleteIssue,
   fetchDepartmentUsers,
   createDepartmentUser,
   updateDepartmentUser,
@@ -35,7 +36,7 @@ const AdminPage = () => {
     name: '',
     email: '',
     password: '',
-    departmentId: '',
+    departmentName: '',
   });
   const [deptUserMessage, setDeptUserMessage] = useState(null);
   const [deptUserError, setDeptUserError] = useState(null);
@@ -67,7 +68,7 @@ const AdminPage = () => {
       !newDeptUser.name ||
       !newDeptUser.email ||
       !newDeptUser.password ||
-      !newDeptUser.departmentId
+      !newDeptUser.departmentName
     ) {
       setDeptUserError('Fill all fields to create a department account.');
       return;
@@ -79,8 +80,10 @@ const AdminPage = () => {
         name: '',
         email: '',
         password: '',
-        departmentId: '',
+        departmentName: '',
       });
+      // Refresh departments list to include any newly created department
+      dispatch(fetchDepartments());
     } catch (err) {
       setDeptUserError(err || 'Failed to create account.');
     }
@@ -97,6 +100,16 @@ const AdminPage = () => {
         await dispatch(deleteDepartmentUser(userId)).unwrap();
       } catch {
         // ignore
+      }
+    }
+  };
+
+  const handleDeleteIssue = async (issueId) => {
+    if (window.confirm('Are you sure you want to delete this complaint? This action cannot be undone.')) {
+      try {
+        await dispatch(deleteIssue(issueId)).unwrap();
+      } catch (err) {
+        alert(err || 'Failed to delete complaint.');
       }
     }
   };
@@ -218,7 +231,7 @@ const AdminPage = () => {
               )}
               <div className="issue-actions">
                 <select
-                  defaultValue=""
+                  value={issue.forwardedTo?._id || ''}
                   onChange={(e) => handleForward(issue._id, e.target.value)}
                 >
                   <option value="">
@@ -238,6 +251,15 @@ const AdminPage = () => {
                   <option value="in_review">In Review</option>
                   <option value="completed">Completed</option>
                 </select>
+                <button
+                  type="button"
+                  className="ghost-btn delete-issue-btn"
+                  onClick={() => handleDeleteIssue(issue._id)}
+                  title="Delete this complaint"
+                >
+                  <Trash2 size={16} />
+                  Delete
+                </button>
               </div>
             </div>
           ))}
@@ -280,18 +302,13 @@ const AdminPage = () => {
               value={newDeptUser.password}
               onChange={onChangeNewDeptUser}
             />
-            <select
-              name="departmentId"
-              value={newDeptUser.departmentId}
+            <input
+              type="text"
+              name="departmentName"
+              placeholder="Department Name (e.g., Water Supply, Roads)"
+              value={newDeptUser.departmentName}
               onChange={onChangeNewDeptUser}
-            >
-              <option value="">Select department...</option>
-              {departments.map((dept) => (
-                <option key={dept._id} value={dept._id}>
-                  {dept.name}
-                </option>
-              ))}
-            </select>
+            />
             <button type="submit" className="secondary-btn">
               <UserPlus size={16} />
               Create Account

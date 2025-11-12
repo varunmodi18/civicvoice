@@ -227,6 +227,18 @@ const addDepartmentUpdate = async (req, res) => {
   res.json(populated);
 };
 
+const deleteIssue = async (req, res) => {
+  const { id } = req.params;
+
+  const issue = await Issue.findById(id);
+  if (!issue) {
+    return res.status(404).json({ message: 'Issue not found' });
+  }
+
+  await issue.deleteOne();
+  return res.json({ id, message: 'Issue deleted successfully' });
+};
+
 module.exports = {
   createIssue,
   getIssuesForAdmin,
@@ -234,4 +246,5 @@ module.exports = {
   getIssuesForCitizen,
   updateIssueStatus,
   addDepartmentUpdate,
+  deleteIssue,
 };

@@ -10,8 +10,8 @@ const CitizenLoginPage = () => {
   const navigate = useNavigate();
   const { status, error } = useSelector((state) => state.auth);
   const [mode, setMode] = useState('login');
-  const [email, setEmail] = useState('citizen1@civicvoice.local');
-  const [password, setPassword] = useState('Citizen@123');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [name, setName] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
