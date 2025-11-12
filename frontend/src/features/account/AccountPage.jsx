@@ -3,7 +3,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import AccountSettings from './AccountSettings';
 import { logout } from '@/features/auth/authSlice';
-import { User, LogOut, Settings } from 'lucide-react';
+import { User, LogOut, Settings, ArrowLeft } from 'lucide-react';
 import '@/styles/AccountPage.css';
 
 const AccountPage = () => {
@@ -20,22 +20,35 @@ const AccountPage = () => {
     navigate('/login/citizen');
   };
 
+  const handleBack = () => {
+    if (user?.role === 'citizen') navigate('/citizen');
+    else if (user?.role === 'admin') navigate('/admin');
+    else if (user?.role === 'department') navigate('/department');
+    else navigate('/login/citizen');
+  };
+
   return (
     <div className="account-page">
       <div className="account-card glass slide-up">
         <div className="account-header">
-          <div className="account-header-content">
-            <div className="account-icon">
-              <User size={24} />
+          <button type="button" className="back-btn" onClick={handleBack}>
+            <ArrowLeft size={20} />
+            Back to Dashboard
+          </button>
+          <div className="account-header-wrapper">
+            <div className="account-header-content">
+              <div className="account-icon">
+                <User size={24} />
+              </div>
+              <div>
+                <h2>My Account</h2>
+                <p>Manage your CivicVoice profile and security</p>
+              </div>
             </div>
-            <div>
-              <h2>My Account</h2>
-              <p>Manage your CivicVoice profile and security</p>
+            <div className="account-identity">
+              <span className="role-pill">{user?.role}</span>
+              <span className="account-email">{user?.email}</span>
             </div>
-          </div>
-          <div className="account-identity">
-            <span className="role-pill">{user?.role}</span>
-            <span className="account-email">{user?.email}</span>
           </div>
         </div>
 
