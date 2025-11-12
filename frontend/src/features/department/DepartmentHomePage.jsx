@@ -1,10 +1,10 @@
-
 import React, { useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import {
   fetchDepartmentIssues,
   departmentUpdateIssue,
 } from '@/features/issues/issuesSlice';
+import { Building2, Clock, MapPin, AlertTriangle, Save, MessageSquare } from 'lucide-react';
 import '@/styles/DepartmentHomePage.css';
 
 const DepartmentHomePage = () => {
@@ -55,30 +55,44 @@ const DepartmentHomePage = () => {
   const formatDateTime = (iso) => {
     if (!iso) return '';
     const d = new Date(iso);
-    return d.toLocaleString();
+    return d.toLocaleString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
   };
 
   return (
     <div className="department-home">
       <div className="department-card glass slide-up">
         <div className="department-header">
-          <div>
-            <h2>{user?.department?.name || 'Department dashboard'}</h2>
-            <p>
-              Work through forwarded complaints, update statuses, and leave clear notes
-              for admins and citizens.
-            </p>
+          <div className="department-header-content">
+            <div className="department-icon">
+              <Building2 size={24} />
+            </div>
+            <div>
+              <h2>{user?.department?.name || 'Department Dashboard'}</h2>
+              <p>
+                Work through forwarded complaints, update statuses, and leave clear notes
+                for admins and citizens.
+              </p>
+            </div>
           </div>
         </div>
 
         <div className="status-summary dept-summary">
           <div className="status-pill">
+            <AlertTriangle size={16} />
             Pending <span>{statusCounts.pending}</span>
           </div>
           <div className="status-pill">
-            In review <span>{statusCounts.in_review}</span>
+            <Clock size={16} />
+            In Review <span>{statusCounts.in_review}</span>
           </div>
           <div className="status-pill">
+            <Save size={16} />
             Completed <span>{statusCounts.completed}</span>
           </div>
         </div>
@@ -86,6 +100,7 @@ const DepartmentHomePage = () => {
         <div className="dept-issue-list">
           {departmentIssues.length === 0 && (
             <p className="no-issues">
+              <AlertTriangle size={20} />
               No complaints have been forwarded to this department yet.
             </p>
           )}
@@ -95,23 +110,28 @@ const DepartmentHomePage = () => {
                 <div>
                   <h3>{issue.issueType}</h3>
                   <p className="dept-issue-meta">
-                    Location: <strong>{issue.location}</strong> • Severity{' '}
-                    <strong>{issue.severity}</strong>
+                    <MapPin size={14} />
+                    {issue.location}
+                    <span>•</span>
+                    <AlertTriangle size={14} />
+                    Severity: <strong>{issue.severity}</strong>
                   </p>
                   <p className="dept-issue-meta">
-                    Complaint ID:{' '}
                     <code>CV-{issue._id.slice(-6).toUpperCase()}</code>
                   </p>
                 </div>
                 <span className={`status-badge status-${issue.status}`}>
-                  {issue.status}
+                  {issue.status.replace('_', ' ')}
                 </span>
               </div>
               <p className="dept-issue-summary">{issue.summary}</p>
 
               {issue.departmentUpdates && issue.departmentUpdates.length > 0 && (
                 <div className="issue-timeline">
-                  <h4>Update timeline</h4>
+                  <h4>
+                    <MessageSquare size={14} />
+                    Update Timeline
+                  </h4>
                   <ul>
                     {issue.departmentUpdates.map((u, idx) => (
                       <li key={idx}>
@@ -119,7 +139,10 @@ const DepartmentHomePage = () => {
                           {formatDateTime(u.createdAt)}
                         </span>
                         <span className="timeline-text">
-                          [{u.status}] {u.text}
+                          <span className={`status-badge status-${u.status}`}>
+                            {u.status.replace('_', ' ')}
+                          </span>
+                          {u.text}
                         </span>
                       </li>
                     ))}
@@ -132,16 +155,16 @@ const DepartmentHomePage = () => {
                   value={statusDrafts[issue._id] || issue.status}
                   onChange={(e) => handleStatusChange(issue._id, e.target.value)}
                 >
-                  <option value="pending">pending</option>
-                  <option value="in_review">in_review</option>
-                  <option value="completed">completed</option>
+                  <option value="pending">Pending</option>
+                  <option value="in_review">In Review</option>
+                  <option value="completed">Completed</option>
                 </select>
               </div>
 
               <div className="dept-comment-box">
                 <textarea
                   rows={3}
-                  placeholder="Add a brief note about what your team is doing…"
+                  placeholder="Add a brief note about what your team is doing..."
                   value={commentDrafts[issue._id] || ''}
                   onChange={(e) => handleCommentChange(issue._id, e.target.value)}
                 />
@@ -150,7 +173,8 @@ const DepartmentHomePage = () => {
                   className="secondary-btn"
                   onClick={() => handleSubmitUpdate(issue._id)}
                 >
-                  Save update
+                  <Save size={16} />
+                  Save Update
                 </button>
               </div>
             </div>

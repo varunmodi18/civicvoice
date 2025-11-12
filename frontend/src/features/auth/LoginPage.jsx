@@ -1,8 +1,8 @@
-
 import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { login } from './authSlice';
+import { Eye, EyeOff, Shield, Mail, Lock } from 'lucide-react';
 import '@/styles/LoginPage.css';
 
 const AdminLoginPage = () => {
@@ -25,27 +25,38 @@ const AdminLoginPage = () => {
     <div className="auth-page">
       <div className="auth-card glass fade-in">
         <div className="auth-card-header">
-          <h2>Admin console</h2>
+          <div className="auth-icon admin">
+            <Shield size={24} />
+          </div>
+          <h2>Admin Console</h2>
           <p>Review and route citizen complaints with a visual status overview.</p>
         </div>
 
         <form className="auth-form" onSubmit={onSubmit}>
           <div className="form-group">
-            <label>Email</label>
+            <label>
+              <Mail size={14} />
+              Email
+            </label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              placeholder="admin@civicvoice.local"
               required
             />
           </div>
           <div className="form-group">
-            <label>Password</label>
+            <label>
+              <Lock size={14} />
+              Password
+            </label>
             <div className="password-wrapper">
               <input
                 type={showPassword ? 'text' : 'password'}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
                 required
               />
               <button
@@ -53,7 +64,7 @@ const AdminLoginPage = () => {
                 className="eye-btn"
                 onClick={() => setShowPassword((v) => !v)}
               >
-                {showPassword ? '🙈' : '👁️'}
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
             </div>
           </div>
@@ -63,13 +74,13 @@ const AdminLoginPage = () => {
             className="primary-btn w-full"
             disabled={status === 'loading'}
           >
-            {status === 'loading' ? 'Signing in…' : 'Login as admin'}
+            {status === 'loading' ? 'Signing in...' : 'Login as admin'}
           </button>
         </form>
 
         <div className="auth-hint">
           <p>
-            Seeded admin: <code>admin@civicvoice.local</code> /{' '}
+            Demo account: <code>admin@civicvoice.local</code> /{' '}
             <code>Admin@123</code>
           </p>
         </div>

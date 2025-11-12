@@ -1,8 +1,8 @@
-
 import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { login } from './authSlice';
+import { Eye, EyeOff, Building2, Mail, Lock } from 'lucide-react';
 import '@/styles/LoginPage.css';
 
 const DepartmentLoginPage = () => {
@@ -25,7 +25,10 @@ const DepartmentLoginPage = () => {
     <div className="auth-page">
       <div className="auth-card glass fade-in">
         <div className="auth-card-header">
-          <h2>Department dashboard</h2>
+          <div className="auth-icon department">
+            <Building2 size={24} />
+          </div>
+          <h2>Department Dashboard</h2>
           <p>
             View issues forwarded to your team and add clear updates for admins and
             citizens.
@@ -34,21 +37,29 @@ const DepartmentLoginPage = () => {
 
         <form className="auth-form" onSubmit={onSubmit}>
           <div className="form-group">
-            <label>Email</label>
+            <label>
+              <Mail size={14} />
+              Email
+            </label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              placeholder="department@civicvoice.local"
               required
             />
           </div>
           <div className="form-group">
-            <label>Password</label>
+            <label>
+              <Lock size={14} />
+              Password
+            </label>
             <div className="password-wrapper">
               <input
                 type={showPassword ? 'text' : 'password'}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
                 required
               />
               <button
@@ -56,7 +67,7 @@ const DepartmentLoginPage = () => {
                 className="eye-btn"
                 onClick={() => setShowPassword((v) => !v)}
               >
-                {showPassword ? '🙈' : '👁️'}
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
             </div>
           </div>
@@ -66,13 +77,13 @@ const DepartmentLoginPage = () => {
             className="primary-btn w-full"
             disabled={status === 'loading'}
           >
-            {status === 'loading' ? 'Signing in…' : 'Login as department'}
+            {status === 'loading' ? 'Signing in...' : 'Login as department'}
           </button>
         </form>
 
         <div className="auth-hint">
           <p>
-            Seeded dept: <code>roads@civicvoice.local</code> / <code>Dept@123</code>
+            Demo account: <code>roads@civicvoice.local</code> / <code>Dept@123</code>
           </p>
         </div>
       </div>

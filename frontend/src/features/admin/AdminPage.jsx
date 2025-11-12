@@ -1,4 +1,3 @@
-
 import React, { useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import {
@@ -10,6 +9,19 @@ import {
   updateDepartmentUser,
   deleteDepartmentUser,
 } from '@/features/issues/issuesSlice';
+import {
+  Shield,
+  AlertTriangle,
+  Clock,
+  CheckCircle,
+  MapPin,
+  Building2,
+  Send,
+  UserPlus,
+  Trash2,
+  MessageSquare,
+  FileText,
+} from 'lucide-react';
 import '@/styles/AdminPage.css';
 
 const AdminPage = () => {
@@ -62,7 +74,7 @@ const AdminPage = () => {
     }
     try {
       await dispatch(createDepartmentUser(newDeptUser)).unwrap();
-      setDeptUserMessage('Department account created.');
+      setDeptUserMessage('Department account created successfully.');
       setNewDeptUser({
         name: '',
         email: '',
@@ -80,10 +92,12 @@ const AdminPage = () => {
   };
 
   const handleDeleteDeptUser = async (userId) => {
-    try {
-      await dispatch(deleteDepartmentUser(userId)).unwrap();
-    } catch {
-      // ignore
+    if (window.confirm('Are you sure you want to delete this department account?')) {
+      try {
+        await dispatch(deleteDepartmentUser(userId)).unwrap();
+      } catch {
+        // ignore
+      }
     }
   };
 
@@ -100,40 +114,55 @@ const AdminPage = () => {
   const formatDateTime = (iso) => {
     if (!iso) return '';
     const d = new Date(iso);
-    return d.toLocaleString();
+    return d.toLocaleString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
   };
 
   return (
     <div className="admin-page">
       <div className="admin-card glass slide-up">
         <div className="admin-header">
-          <div>
-            <h2>Admin dashboard</h2>
-            <p>
-              View all complaints, forward them to departments, and monitor their
-              lifecycle.
-            </p>
+          <div className="admin-header-content">
+            <div className="admin-icon">
+              <Shield size={24} />
+            </div>
+            <div>
+              <h2>Admin Dashboard</h2>
+              <p>
+                View all complaints, forward them to departments, and monitor their
+                lifecycle.
+              </p>
+            </div>
           </div>
           {user && (
             <span className="admin-user-pill">
-              Admin: <strong>{user.name}</strong>
+              <Shield size={12} />
+              {user.name}
             </span>
           )}
         </div>
 
         <div className="status-summary">
           <div className="status-pill">
+            <AlertTriangle size={16} />
             Pending <span>{statusCounts.pending}</span>
           </div>
           <div className="status-pill">
-            In review <span>{statusCounts.in_review}</span>
+            <Clock size={16} />
+            In Review <span>{statusCounts.in_review}</span>
           </div>
           <div className="status-pill">
+            <CheckCircle size={16} />
             Completed <span>{statusCounts.completed}</span>
           </div>
         </div>
 
-        {status === 'loading' && <p>Loading issues…</p>}
+        {status === 'loading' && <p className="loading-text">Loading issues...</p>}
         {error && <p className="admin-error">{error}</p>}
 
         <div className="issue-list">
@@ -143,27 +172,33 @@ const AdminPage = () => {
                 <div>
                   <h3>{issue.issueType}</h3>
                   <p className="issue-meta">
-                    {issue.location} • Severity{' '}
-                    <strong>{issue.severity}</strong>
+                    <MapPin size={14} />
+                    {issue.location}
+                    <span>•</span>
+                    <AlertTriangle size={14} />
+                    Severity: <strong>{issue.severity}</strong>
                   </p>
                   <p className="issue-meta">
-                    Complaint ID:{' '}
                     <code>CV-{issue._id.slice(-6).toUpperCase()}</code>
                   </p>
                 </div>
                 <span className={`status-badge status-${issue.status}`}>
-                  {issue.status}
+                  {issue.status.replace('_', ' ')}
                 </span>
               </div>
               <p className="issue-summary">{issue.summary}</p>
               {issue.forwardedTo && (
                 <p className="issue-meta">
+                  <Building2 size={14} />
                   Forwarded to: <strong>{issue.forwardedTo.name}</strong>
                 </p>
               )}
               {issue.departmentUpdates && issue.departmentUpdates.length > 0 && (
                 <div className="issue-timeline">
-                  <h4>Department updates</h4>
+                  <h4>
+                    <MessageSquare size={14} />
+                    Department Updates
+                  </h4>
                   <ul>
                     {issue.departmentUpdates.map((u, idx) => (
                       <li key={idx}>
@@ -171,7 +206,10 @@ const AdminPage = () => {
                           {formatDateTime(u.createdAt)}
                         </span>
                         <span className="timeline-text">
-                          [{u.status}] {u.text}
+                          <span className={`status-badge status-${u.status}`}>
+                            {u.status.replace('_', ' ')}
+                          </span>
+                          {u.text}
                         </span>
                       </li>
                     ))}
@@ -183,7 +221,9 @@ const AdminPage = () => {
                   defaultValue=""
                   onChange={(e) => handleForward(issue._id, e.target.value)}
                 >
-                  <option value="">Forward to department…</option>
+                  <option value="">
+                    <Send size={14} /> Forward to department...
+                  </option>
                   {departments.map((dept) => (
                     <option key={dept._id} value={dept._id}>
                       {dept.name}
@@ -194,22 +234,26 @@ const AdminPage = () => {
                   value={issue.status}
                   onChange={(e) => handleStatusChange(issue._id, e.target.value)}
                 >
-                  <option value="pending">pending</option>
-                  <option value="in_review">in_review</option>
-                  <option value="completed">completed</option>
+                  <option value="pending">Pending</option>
+                  <option value="in_review">In Review</option>
+                  <option value="completed">Completed</option>
                 </select>
               </div>
             </div>
           ))}
           {items.length === 0 && status !== 'loading' && (
             <p className="no-issues">
+              <FileText size={24} />
               No issues yet. Ask citizens to submit one via the chat or quick form.
             </p>
           )}
         </div>
 
         <div className="admin-section">
-          <h3>Department accounts</h3>
+          <div className="admin-section-header">
+            <UserPlus size={20} />
+            <h3>Department Accounts</h3>
+          </div>
           <p className="admin-section-text">
             Create and manage department login accounts that will receive forwarded
             complaints.
@@ -241,7 +285,7 @@ const AdminPage = () => {
               value={newDeptUser.departmentId}
               onChange={onChangeNewDeptUser}
             >
-              <option value="">Select department…</option>
+              <option value="">Select department...</option>
               {departments.map((dept) => (
                 <option key={dept._id} value={dept._id}>
                   {dept.name}
@@ -249,17 +293,29 @@ const AdminPage = () => {
               ))}
             </select>
             <button type="submit" className="secondary-btn">
-              Create account
+              <UserPlus size={16} />
+              Create Account
             </button>
           </form>
           {deptUserMessage && (
-            <p className="admin-message ok">{deptUserMessage}</p>
+            <p className="admin-message ok">
+              <CheckCircle size={16} />
+              {deptUserMessage}
+            </p>
           )}
-          {deptUserError && <p className="admin-message error">{deptUserError}</p>}
+          {deptUserError && (
+            <p className="admin-message error">
+              <AlertTriangle size={16} />
+              {deptUserError}
+            </p>
+          )}
 
           <div className="dept-users-list">
             {departmentUsers.length === 0 && (
-              <p className="no-issues">No department accounts yet.</p>
+              <p className="no-issues">
+                <Building2 size={20} />
+                No department accounts yet.
+              </p>
             )}
             {departmentUsers.map((u) => (
               <div key={u._id} className="dept-user-row hover-float">
@@ -272,7 +328,7 @@ const AdminPage = () => {
                     value={u.department?._id || ''}
                     onChange={(e) => handleChangeDeptForUser(u._id, e.target.value)}
                   >
-                    <option value="">Assign department…</option>
+                    <option value="">Assign department...</option>
                     {departments.map((dept) => (
                       <option key={dept._id} value={dept._id}>
                         {dept.name}
@@ -284,6 +340,7 @@ const AdminPage = () => {
                     className="dept-user-delete ghost-btn"
                     onClick={() => handleDeleteDeptUser(u._id)}
                   >
+                    <Trash2 size={14} />
                     Delete
                   </button>
                 </div>
