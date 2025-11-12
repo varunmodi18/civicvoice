@@ -9,11 +9,33 @@
 }
 
 .account-header {
+  margin-bottom: 1.5rem;
+}
+
+.back-btn {
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0;
+  margin-bottom: 1rem;
+}
+
+.back-btn:hover {
+  color: #60a5fa;
+}
+
+.account-header-wrapper {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
   gap: 1.5rem;
-  margin-bottom: 1.5rem;
 }
 
 .account-header-content {
