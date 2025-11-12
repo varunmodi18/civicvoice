@@ -46,7 +46,7 @@ const loginUser = async (req, res) => {
     return res.status(400).json({ message: 'Please provide email and password' });
   }
 
-  const user = await User.findOne({ email });
+  const user = await User.findOne({ email }).populate('department', 'name');
   if (!user) {
     return res.status(401).json({ message: 'Invalid credentials' });
   }

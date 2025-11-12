@@ -41,12 +41,12 @@ const listDepartments = async (req, res) => {
 };
 
 const createDepartmentUser = async (req, res) => {
-  const { name, email, password, departmentId } = req.body;
+  const { name, email, password, departmentName } = req.body;
 
-  if (!name || !email || !password || !departmentId) {
+  if (!name || !email || !password || !departmentName) {
     return res
       .status(400)
-      .json({ message: 'Name, email, password and departmentId are required' });
+      .json({ message: 'Name, email, password and departmentName are required' });
   }
 
   const existing = await User.findOne({ email });
@@ -54,9 +54,10 @@ const createDepartmentUser = async (req, res) => {
     return res.status(400).json({ message: 'User with this email already exists' });
   }
 
-  const dept = await Department.findById(departmentId);
+  // Find or create the department
+  let dept = await Department.findOne({ name: departmentName });
   if (!dept) {
-    return res.status(400).json({ message: 'Department not found' });
+    dept = await Department.create({ name: departmentName });
   }
 
   const user = await User.create({

@@ -33,19 +33,22 @@ const AppShell = ({ children }) => {
           </span>
         </button>
         <nav className="nav-links">
-          <Link to="/login/citizen" className="nav-link">
-            Citizen
-          </Link>
-          <Link to="/login/admin" className="nav-link">
-            Admin
-          </Link>
-          <Link to="/login/department" className="nav-link">
-            Department
-          </Link>
-          {user && (
+          {user ? (
             <Link to="/account" className="nav-link nav-pill">
               My Account
             </Link>
+          ) : (
+            <>
+              <Link to="/login/citizen" className="nav-link">
+                Citizen
+              </Link>
+              <Link to="/login/admin" className="nav-link">
+                Admin
+              </Link>
+              <Link to="/login/department" className="nav-link">
+                Department
+              </Link>
+            </>
           )}
         </nav>
       </header>
