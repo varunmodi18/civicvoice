@@ -1,5 +1,5 @@
 
-# CivicVoice – MERN Demo (UI-focused)
+# CivicVoice
 
 This bundle contains a small MERN stack project for **CivicVoice**, with a focus on a
 clean, animated UI and a simple department workflow for complaints.
