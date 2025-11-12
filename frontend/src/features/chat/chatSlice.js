@@ -18,11 +18,13 @@ export const submitIssue = createAsyncThunk(
 
 export const uploadEvidence = createAsyncThunk(
   'chat/uploadEvidence',
-  async (file, thunkAPI) => {
+  async (files, thunkAPI) => {
     try {
       const formData = new FormData();
-      formData.append('file', file);
-      const res = await api.post('/uploads', formData, {
+      files.forEach(file => {
+        formData.append('files', file);
+      });
+      const res = await api.post('/uploads/multiple', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
       return res.data;
@@ -62,6 +64,7 @@ const chatSlice = createSlice({
     stepIndex: 0,
     issueData: {},
     evidenceUrls: [],
+    evidenceFiles: [], // Store file details
     lastIssue: null,
     status: 'idle',
     error: null,
@@ -91,6 +94,7 @@ const chatSlice = createSlice({
       state.stepIndex = 0;
       state.issueData = {};
       state.evidenceUrls = [];
+      state.evidenceFiles = [];
       state.lastIssue = null;
       state.status = 'idle';
       state.error = null;
@@ -125,10 +129,20 @@ const chatSlice = createSlice({
         });
       })
       .addCase(uploadEvidence.fulfilled, (state, action) => {
-        state.evidenceUrls.push(action.payload.url);
+        const files = action.payload.files;
+        files.forEach(file => {
+          state.evidenceUrls.push(file.url);
+          state.evidenceFiles.push(file);
+        });
         state.messages.push({
           from: 'system',
-          text: 'Evidence attached. You can continue describing the issue.',
+          text: `${files.length} file(s) attached successfully. You can continue describing the issue.`,
+        });
+      })
+      .addCase(uploadEvidence.rejected, (state, action) => {
+        state.messages.push({
+          from: 'system',
+          text: `Upload failed: ${action.payload || 'Please try again'}`,
         });
       });
   },

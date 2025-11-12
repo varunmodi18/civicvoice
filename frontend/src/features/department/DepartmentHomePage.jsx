@@ -4,7 +4,7 @@ import {
   fetchDepartmentIssues,
   departmentUpdateIssue,
 } from '@/features/issues/issuesSlice';
-import { Building2, Clock, MapPin, AlertTriangle, Save, MessageSquare } from 'lucide-react';
+import { Building2, Clock, MapPin, AlertTriangle, Save, MessageSquare, FileText } from 'lucide-react';
 import '@/styles/DepartmentHomePage.css';
 
 const DepartmentHomePage = () => {
@@ -140,6 +140,29 @@ const DepartmentHomePage = () => {
                 </span>
               </div>
               <p className="dept-issue-summary">{issue.summary}</p>
+
+              {issue.evidenceUrls && issue.evidenceUrls.length > 0 && (
+                <div className="issue-evidence">
+                  <h4>
+                    <FileText size={14} />
+                    Evidence ({issue.evidenceUrls.length})
+                  </h4>
+                  <div className="evidence-links">
+                    {issue.evidenceUrls.map((url, idx) => (
+                      <a
+                        key={idx}
+                        href={`${import.meta.env.VITE_API_URL || 'http://localhost:4000'}${url}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="evidence-link"
+                      >
+                        <FileText size={14} />
+                        Evidence {idx + 1}
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {issue.departmentUpdates && issue.departmentUpdates.length > 0 && (
                 <div className="issue-timeline">

@@ -9,16 +9,20 @@ import {
   submitIssue,
   uploadEvidence,
 } from './chatSlice';
-import { MessageSquare, Send, Paperclip, RotateCcw, Loader2, User, Bot } from 'lucide-react';
+import { fetchMyIssues } from '@/features/issues/issuesSlice';
+import { MessageSquare, Send, Paperclip, RotateCcw, Loader2, User, Bot, X, FileText, Image, Film, FileUp } from 'lucide-react';
 import '@/styles/ChatPage.css';
 
 const ChatPage = () => {
   const dispatch = useDispatch();
-  const { messages, stepIndex, issueData, evidenceUrls, lastIssue, status } =
+  const { messages, stepIndex, issueData, evidenceUrls, evidenceFiles, lastIssue, status } =
     useSelector((state) => state.chat);
   const { user } = useSelector((state) => state.auth);
   const [input, setInput] = useState('');
   const [uploading, setUploading] = useState(false);
+  const [showUploadModal, setShowUploadModal] = useState(false);
+  const [selectedFiles, setSelectedFiles] = useState([]);
+  const [uploadErrors, setUploadErrors] = useState([]);
 
   const handleSend = async (e) => {
     e.preventDefault();
@@ -93,26 +97,89 @@ const ChatPage = () => {
           [currentStep.key]: value,
           evidenceUrls,
         };
-        dispatch(submitIssue(payload));
+        try {
+          await dispatch(submitIssue(payload)).unwrap();
+          // Refresh the citizen's complaints list after successful submission
+          if (user && user.role === 'citizen') {
+            dispatch(fetchMyIssues());
+          }
+        } catch (err) {
+          // Error already handled in the slice
+        }
       }
     }
   };
 
-  const handleFileChange = async (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  const handleFileSelect = (e) => {
+    const files = Array.from(e.target.files);
+    const errors = [];
+    const validFiles = [];
+
+    // Check maximum 3 files
+    if (selectedFiles.length + files.length > 3) {
+      errors.push('You can only attach up to 3 files');
+      setUploadErrors(errors);
+      return;
+    }
+
+    files.forEach(file => {
+      // Check file size (50MB)
+      if (file.size > 50 * 1024 * 1024) {
+        errors.push(`${file.name} exceeds 50MB limit`);
+        return;
+      }
+
+      // Check file type
+      const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf', 'video/mp4'];
+      if (!allowedTypes.includes(file.type)) {
+        errors.push(`${file.name} is not a valid file type`);
+        return;
+      }
+
+      validFiles.push(file);
+    });
+
+    setUploadErrors(errors);
+    setSelectedFiles([...selectedFiles, ...validFiles]);
+  };
+
+  const removeFile = (index) => {
+    setSelectedFiles(selectedFiles.filter((_, i) => i !== index));
+  };
+
+  const handleUploadFiles = async () => {
+    if (selectedFiles.length === 0) return;
+    
     setUploading(true);
     try {
-      await dispatch(uploadEvidence(file)).unwrap();
-    } catch {
-      // ignore
+      await dispatch(uploadEvidence(selectedFiles)).unwrap();
+      setSelectedFiles([]);
+      setShowUploadModal(false);
+      setUploadErrors([]);
+    } catch (err) {
+      setUploadErrors([err || 'Upload failed. Please try again.']);
     } finally {
       setUploading(false);
     }
   };
 
+  const getFileIcon = (file) => {
+    if (file.type.startsWith('image/')) return <Image size={20} />;
+    if (file.type === 'video/mp4') return <Film size={20} />;
+    if (file.type === 'application/pdf') return <FileText size={20} />;
+    return <FileUp size={20} />;
+  };
+
+  const formatFileSize = (bytes) => {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+  };
+
   const handleReset = () => {
     dispatch(resetChat());
+    setSelectedFiles([]);
+    setUploadErrors([]);
   };
 
   return (
@@ -153,22 +220,113 @@ const ChatPage = () => {
         ))}
       </div>
 
+      {/* Evidence Upload Modal */}
+      {showUploadModal && (
+        <div className="modal-overlay" onClick={() => setShowUploadModal(false)}>
+          <div className="modal-content evidence-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>Attach Evidence</h3>
+              <button className="modal-close" onClick={() => setShowUploadModal(false)}>
+                <X size={20} />
+              </button>
+            </div>
+            <div className="modal-body">
+              <p className="modal-info">
+                Upload up to 3 files (JPG, PNG, PDF, or MP4). Max 50MB per file.
+              </p>
+              
+              {uploadErrors.length > 0 && (
+                <div className="upload-errors">
+                  {uploadErrors.map((error, i) => (
+                    <p key={i} className="error-text">{error}</p>
+                  ))}
+                </div>
+              )}
+
+              <div className="file-upload-area">
+                <label className="file-upload-label">
+                  <FileUp size={32} />
+                  <span>Click to select files</span>
+                  <input
+                    type="file"
+                    multiple
+                    accept=".jpg,.jpeg,.png,.pdf,.mp4"
+                    onChange={handleFileSelect}
+                    disabled={selectedFiles.length >= 3}
+                  />
+                </label>
+              </div>
+
+              {selectedFiles.length > 0 && (
+                <div className="selected-files-list">
+                  <h4>Selected Files ({selectedFiles.length}/3)</h4>
+                  {selectedFiles.map((file, index) => (
+                    <div key={index} className="file-item">
+                      <div className="file-info">
+                        {getFileIcon(file)}
+                        <div>
+                          <p className="file-name">{file.name}</p>
+                          <p className="file-size">{formatFileSize(file.size)}</p>
+                        </div>
+                      </div>
+                      <button className="remove-file-btn" onClick={() => removeFile(index)}>
+                        <X size={16} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {evidenceFiles.length > 0 && (
+                <div className="uploaded-files-list">
+                  <h4>Already Uploaded ({evidenceFiles.length})</h4>
+                  {evidenceFiles.map((file, index) => (
+                    <div key={index} className="file-item uploaded">
+                      <div className="file-info">
+                        <FileText size={20} />
+                        <p className="file-name">{file.filename}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+            <div className="modal-footer">
+              <button 
+                className="ghost-btn" 
+                onClick={() => setShowUploadModal(false)}
+              >
+                Cancel
+              </button>
+              <button 
+                className="primary-btn" 
+                onClick={handleUploadFiles}
+                disabled={selectedFiles.length === 0 || uploading}
+              >
+                {uploading ? (
+                  <>
+                    <Loader2 size={16} className="spin" />
+                    Uploading...
+                  </>
+                ) : (
+                  `Upload ${selectedFiles.length} file(s)`
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="chat-footer">
         <div className="chat-actions-row">
-          <label className="secondary-btn file-btn">
-            {uploading ? (
-              <>
-                <Loader2 size={16} className="spin" />
-                Uploading...
-              </>
-            ) : (
-              <>
-                <Paperclip size={16} />
-                Attach evidence
-              </>
-            )}
-            <input type="file" onChange={handleFileChange} disabled={uploading} />
-          </label>
+          <button 
+            className="secondary-btn" 
+            onClick={() => setShowUploadModal(true)}
+            disabled={evidenceFiles.length >= 3}
+          >
+            <Paperclip size={16} />
+            Attach evidence {evidenceFiles.length > 0 && `(${evidenceFiles.length})`}
+          </button>
           {lastIssue && (
             <button type="button" className="ghost-btn" onClick={handleReset}>
               <RotateCcw size={16} />

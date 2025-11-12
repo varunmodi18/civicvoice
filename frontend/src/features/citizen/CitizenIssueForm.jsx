@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { submitIssue } from '@/features/chat/chatSlice';
+import { fetchMyIssues } from '@/features/issues/issuesSlice';
 import { FileText, MapPin, Landmark, AlertCircle, MessageSquare, CheckCircle, XCircle } from 'lucide-react';
 import '@/styles/CitizenIssueForm.css';
 
@@ -34,6 +35,8 @@ const CitizenIssueForm = () => {
         severity: 'medium',
         description: '',
       });
+      // Refresh the citizen's complaints list after successful submission
+      dispatch(fetchMyIssues());
     } catch (err) {
       setError(err || 'Failed to submit');
     }
