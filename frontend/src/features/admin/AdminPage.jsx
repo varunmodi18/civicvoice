@@ -58,6 +58,8 @@ const AdminPage = () => {
     dateTo: '',
   });
   const [activeTab, setActiveTab] = useState('complaints');
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   useEffect(() => {
     dispatch(fetchIssues());
@@ -214,6 +216,24 @@ const AdminPage = () => {
     });
     return counts;
   }, [filteredItems]);
+
+  // Pagination calculations
+  const totalPages = Math.ceil(filteredItems.length / itemsPerPage);
+  const paginatedItems = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    return filteredItems.slice(startIndex, endIndex);
+  }, [filteredItems, currentPage, itemsPerPage]);
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filters]);
+
+  const handlePageChange = (pageNumber) => {
+    setCurrentPage(pageNumber);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   const formatDateTime = (iso) => {
     if (!iso) return '';
@@ -391,7 +411,7 @@ const AdminPage = () => {
         {error && <p className="admin-error">{error}</p>}
 
         <div className="issue-list">
-          {filteredItems.map((issue) => (
+          {paginatedItems.map((issue) => (
             <div key={issue._id} className="issue-card hover-float">
               <div className="issue-header">
                 <div>
@@ -567,6 +587,59 @@ const AdminPage = () => {
             </p>
           )}
         </div>
+
+        {/* Pagination Controls */}
+        {filteredItems.length > 0 && totalPages > 1 && (
+          <div className="pagination">
+            <button
+              className="pagination-btn"
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={currentPage === 1}
+            >
+              Previous
+            </button>
+            
+            <div className="pagination-numbers">
+              {[...Array(totalPages)].map((_, index) => {
+                const pageNumber = index + 1;
+                // Show first page, last page, current page, and pages around current
+                if (
+                  pageNumber === 1 ||
+                  pageNumber === totalPages ||
+                  (pageNumber >= currentPage - 1 && pageNumber <= currentPage + 1)
+                ) {
+                  return (
+                    <button
+                      key={pageNumber}
+                      className={`pagination-number ${currentPage === pageNumber ? 'active' : ''}`}
+                      onClick={() => handlePageChange(pageNumber)}
+                    >
+                      {pageNumber}
+                    </button>
+                  );
+                } else if (
+                  pageNumber === currentPage - 2 ||
+                  pageNumber === currentPage + 2
+                ) {
+                  return <span key={pageNumber} className="pagination-ellipsis">...</span>;
+                }
+                return null;
+              })}
+            </div>
+
+            <button
+              className="pagination-btn"
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={currentPage === totalPages}
+            >
+              Next
+            </button>
+
+            <span className="pagination-info">
+              Page {currentPage} of {totalPages} • {filteredItems.length} total records
+            </span>
+          </div>
+        )}
           </>
         )}
 
