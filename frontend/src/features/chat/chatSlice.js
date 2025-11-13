@@ -102,6 +102,11 @@ const chatSlice = createSlice({
     addEvidenceUrl(state, action) {
       state.evidenceUrls.push(action.payload);
     },
+    removeEvidenceFile(state, action) {
+      const index = action.payload;
+      state.evidenceUrls.splice(index, 1);
+      state.evidenceFiles.splice(index, 1);
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -155,6 +160,7 @@ export const {
   nextStep,
   resetChat,
   addEvidenceUrl,
+  removeEvidenceFile,
 } = chatSlice.actions;
 
 export { steps };
