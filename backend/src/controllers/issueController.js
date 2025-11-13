@@ -180,7 +180,7 @@ const addDepartmentUpdate = async (req, res) => {
   }
 
   const { id } = req.params;
-  const { status, comment } = req.body;
+  const { status, comment, resolutionEvidence } = req.body;
 
   if (!comment && !status) {
     return res
@@ -204,11 +204,23 @@ const addDepartmentUpdate = async (req, res) => {
   }
 
   if (status) {
-    const allowed = ['pending', 'in_review', 'completed'];
+    const allowed = ['pending', 'in_review', 'completed', 'reopened'];
     if (!allowed.includes(status)) {
       return res.status(400).json({ message: 'Invalid status value' });
     }
     issue.status = status;
+  }
+
+  // Handle resolution evidence upload when marking as completed
+  if (resolutionEvidence) {
+    const parsedEvidence = Array.isArray(resolutionEvidence)
+      ? resolutionEvidence
+      : [resolutionEvidence];
+    
+    if (!issue.resolutionEvidence) {
+      issue.resolutionEvidence = [];
+    }
+    issue.resolutionEvidence.push(...parsedEvidence);
   }
 
   if (comment) {
@@ -219,6 +231,63 @@ const addDepartmentUpdate = async (req, res) => {
       department: req.user.department._id || req.user.department,
     });
   }
+
+  const saved = await issue.save();
+
+  const populated = await Issue.findById(saved._id)
+    .populate('forwardedTo', 'name')
+    .populate('createdBy', 'name email')
+    .populate('departmentUpdates.addedBy', 'name email')
+    .populate('departmentUpdates.department', 'name');
+
+  res.json(populated);
+};
+
+const reopenIssue = async (req, res) => {
+  const { id } = req.params;
+  const { comment } = req.body;
+
+  if (!comment) {
+    return res
+      .status(400)
+      .json({ message: 'Please provide a reason for reopening the issue' });
+  }
+
+  const issue = await Issue.findById(id);
+  if (!issue) {
+    return res.status(404).json({ message: 'Issue not found' });
+  }
+
+  // Only allow reopening of completed issues
+  if (issue.status !== 'completed') {
+    return res
+      .status(400)
+      .json({ message: 'Only completed issues can be reopened' });
+  }
+
+  // Check authorization: admin or the citizen who created it
+  if (req.user.role === 'citizen' && issue.createdBy.toString() !== req.user._id.toString()) {
+    return res
+      .status(403)
+      .json({ message: 'You can only reopen your own issues' });
+  }
+
+  if (req.user.role !== 'admin' && req.user.role !== 'citizen') {
+    return res
+      .status(403)
+      .json({ message: 'Only citizens and admins can reopen issues' });
+  }
+
+  // Update status to reopened
+  issue.status = 'reopened';
+
+  // Add a department update with the reopen comment
+  issue.departmentUpdates.push({
+    text: `Issue reopened: ${comment}`,
+    status: 'reopened',
+    addedBy: req.user._id,
+    department: issue.forwardedTo,
+  });
 
   const saved = await issue.save();
 
@@ -250,5 +319,6 @@ module.exports = {
   getIssuesForCitizen,
   updateIssueStatus,
   addDepartmentUpdate,
+  reopenIssue,
   deleteIssue,
 };

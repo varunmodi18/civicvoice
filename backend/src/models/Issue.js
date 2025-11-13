@@ -6,7 +6,7 @@ const departmentUpdateSchema = new mongoose.Schema(
     text: { type: String, required: true },
     status: {
       type: String,
-      enum: ['pending', 'in_review', 'completed'],
+      enum: ['pending', 'in_review', 'completed', 'reopened'],
     },
     addedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     department: { type: mongoose.Schema.Types.ObjectId, ref: 'Department' },
@@ -33,6 +33,7 @@ const issueSchema = new mongoose.Schema(
       default: 'new',
     },
     evidenceUrls: [{ type: String }],
+    resolutionEvidence: [{ type: String }],
     contactName: { type: String },
     contactPhone: { type: String },
     contactEmail: { type: String },
@@ -43,7 +44,7 @@ const issueSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ['pending', 'in_review', 'forwarded', 'completed'],
+      enum: ['pending', 'in_review', 'forwarded', 'completed', 'reopened'],
       default: 'pending',
     },
     summary: { type: String },
