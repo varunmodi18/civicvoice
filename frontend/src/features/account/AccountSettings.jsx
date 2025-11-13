@@ -29,14 +29,14 @@ const AccountSettings = () => {
 
   return (
     <div className="account-settings">
-      <div className="settings-header">
+      <div className="settings-header fade-in">
         <Lock size={20} />
         <h3>Change Password</h3>
       </div>
-      <p className="settings-text">
+      <p className="settings-text fade-in stagger-1">
         Use a strong password with a mix of letters, numbers, and symbols.
       </p>
-      <form className="settings-form" onSubmit={onSubmit}>
+      <form className="settings-form scale-in stagger-2" onSubmit={onSubmit}>
         <div className="form-group">
           <label>
             <Lock size={14} />

@@ -23,8 +23,8 @@ const AdminLoginPage = () => {
 
   return (
     <div className="auth-page">
-      <div className="auth-card glass fade-in">
-        <div className="auth-card-header">
+      <div className="auth-card glass scale-in">
+        <div className="auth-card-header slide-in-left stagger-1">
           <div className="auth-icon admin">
             <Shield size={24} />
           </div>
@@ -32,7 +32,7 @@ const AdminLoginPage = () => {
           <p>Review and route citizen complaints with a visual status overview.</p>
         </div>
 
-        <form className="auth-form" onSubmit={onSubmit}>
+        <form className="auth-form slide-in-right stagger-2" onSubmit={onSubmit}>
           <div className="form-group">
             <label>
               <Mail size={14} />
@@ -78,7 +78,7 @@ const AdminLoginPage = () => {
           </button>
         </form>
 
-        <div className="auth-hint">
+        <div className="auth-hint fade-in stagger-3">
           <p>
             Demo account: <code>admin@civicvoice.local</code> /{' '}
             <code>Admin@123</code>

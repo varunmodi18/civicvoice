@@ -218,8 +218,8 @@ const CitizenMyIssues = () => {
             <p>No complaints match the selected filters.</p>
           </div>
         )}
-        {filteredIssues.map((issue) => (
-          <div key={issue._id} className="citizen-myissues-row hover-float">
+        {filteredIssues.map((issue, idx) => (
+          <div key={issue._id} className={`citizen-myissues-row hover-float fade-scale stagger-${Math.min(idx + 1, 5)}`}>
             <div className="citizen-myissues-row-header">
               <span className="citizen-myissues-type">{issue.issueType}</span>
               <span className={`status-badge status-${issue.status}`}>

@@ -270,7 +270,7 @@ const AdminPage = () => {
           )}
         </div>
 
-        <div className="admin-tabs">
+        <div className="admin-tabs fade-in">
           <button 
             className={`admin-tab ${activeTab === 'complaints' ? 'active' : ''}`}
             onClick={() => setActiveTab('complaints')}
@@ -289,7 +289,7 @@ const AdminPage = () => {
 
         {activeTab === 'complaints' && (
           <>
-            <div className="status-summary">
+            <div className="status-summary slide-in-left stagger-1">
           <div className="status-pill pending">
             <AlertTriangle size={16} />
             Pending <span>{statusCounts.pending}</span>
@@ -304,7 +304,7 @@ const AdminPage = () => {
           </div>
         </div>
 
-        <div className="filter-section">
+        <div className="filter-section slide-in-right stagger-2">
           <button 
             className="filter-toggle-btn secondary-btn"
             onClick={() => setShowFilters(!showFilters)}
@@ -411,8 +411,8 @@ const AdminPage = () => {
         {error && <p className="admin-error">{error}</p>}
 
         <div className="issue-list">
-          {paginatedItems.map((issue) => (
-            <div key={issue._id} className="issue-card hover-float">
+          {paginatedItems.map((issue, idx) => (
+            <div key={issue._id} className={`issue-card hover-float fade-scale stagger-${Math.min(idx + 1, 5)}`}>
               <div className="issue-header">
                 <div>
                   <h3>{issue.issueType}</h3>

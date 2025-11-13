@@ -258,7 +258,7 @@ const ChatPage = () => {
         {messages.map((m, idx) => (
           <div
             key={idx}
-            className={`chat-bubble-wrapper ${m.from === 'user' ? 'align-right' : 'align-left'}`}
+            className={`chat-bubble-wrapper ${m.from === 'user' ? 'align-right' : 'align-left'} fade-scale`}
           >
             <div className={`chat-bubble ${m.from === 'user' ? 'from-user' : 'from-system'}`}>
               {m.from === 'system' && (
@@ -404,7 +404,7 @@ const ChatPage = () => {
             onClick={() => setShowUploadModal(true)}
           >
             <Paperclip size={16} />
-            Attach evidence {evidenceFiles.length > 0 && `(${evidenceFiles.length})`}
+            Attach Evidence {evidenceFiles.length > 0 && `(${evidenceFiles.length})`}
           </button>
           {lastIssue && (
             <button type="button" className="ghost-btn" onClick={handleReset}>

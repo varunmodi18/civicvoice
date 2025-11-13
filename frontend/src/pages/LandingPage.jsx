@@ -95,15 +95,15 @@ const LandingPage = () => {
             </div>
           </div>
           <div className="hero-visual">
-            <div className="floating-card card-1 hover-float">
+            <div className="floating-card card-1 hover-float scale-in stagger-2">
               <MapPin size={24} />
               <span>Report Issue</span>
             </div>
-            <div className="floating-card card-2 hover-float">
+            <div className="floating-card card-2 hover-float scale-in stagger-3">
               <Clock size={24} />
               <span>Track Progress</span>
             </div>
-            <div className="floating-card card-3 hover-float">
+            <div className="floating-card card-3 hover-float scale-in stagger-4">
               <CheckCircle size={24} />
               <span>Issue Resolved</span>
             </div>
@@ -115,7 +115,7 @@ const LandingPage = () => {
       <section className="stats-section">
         <div className="stats-container">
           {stats.map((stat, idx) => (
-            <div key={idx} className="stat-card glass hover-float">
+            <div key={idx} className={`stat-card glass hover-float scale-in stagger-${idx + 1}`}>
               <div className="stat-icon">{stat.icon}</div>
               <div className="stat-value">{stat.value}</div>
               <div className="stat-label">{stat.label}</div>
@@ -126,7 +126,7 @@ const LandingPage = () => {
 
       {/* Features Section */}
       <section id="features" className="features-section">
-        <div className="section-header">
+        <div className="section-header fade-in">
           <h2 className="section-title">Why Choose CivicVoice?</h2>
           <p className="section-subtitle">
             Empowering citizens with the tools they need to create positive change
@@ -134,7 +134,7 @@ const LandingPage = () => {
         </div>
         <div className="features-grid">
           {features.map((feature, idx) => (
-            <div key={idx} className="feature-card glass hover-float">
+            <div key={idx} className={`feature-card glass hover-float fade-scale stagger-${idx + 1}`}>
               <div className="feature-icon">{feature.icon}</div>
               <h3 className="feature-title">{feature.title}</h3>
               <p className="feature-description">{feature.description}</p>
@@ -145,7 +145,7 @@ const LandingPage = () => {
 
       {/* How It Works Section */}
       <section className="how-it-works-section">
-        <div className="section-header">
+        <div className="section-header fade-in">
           <h2 className="section-title">How It Works</h2>
           <p className="section-subtitle">
             Three simple steps to make your voice heard
@@ -153,7 +153,7 @@ const LandingPage = () => {
         </div>
         <div className="steps-container">
           {howItWorks.map((item, idx) => (
-            <div key={idx} className="step-card glass hover-float">
+            <div key={idx} className={`step-card glass hover-float slide-in-left stagger-${idx + 1}`}>
               <div className="step-number">{item.step}</div>
               <h3 className="step-title">{item.title}</h3>
               <p className="step-description">{item.description}</p>
@@ -164,14 +164,14 @@ const LandingPage = () => {
 
       {/* User Types Section */}
       <section className="user-types-section">
-        <div className="section-header">
+        <div className="section-header fade-in">
           <h2 className="section-title">Who We Serve</h2>
           <p className="section-subtitle">
             A platform designed for everyone in the civic ecosystem
           </p>
         </div>
         <div className="user-types-grid">
-          <div className="user-type-card glass hover-float">
+          <div className="user-type-card glass hover-float scale-in stagger-1">
             <div className="user-type-icon">
               <Heart size={40} />
             </div>
@@ -181,7 +181,7 @@ const LandingPage = () => {
               Report an Issue
             </button>
           </div>
-          <div className="user-type-card glass hover-float">
+          <div className="user-type-card glass hover-float scale-in stagger-2">
             <div className="user-type-icon">
               <Building2 size={40} />
             </div>
@@ -191,7 +191,7 @@ const LandingPage = () => {
               Department Login
             </button>
           </div>
-          <div className="user-type-card glass hover-float">
+          <div className="user-type-card glass hover-float scale-in stagger-3">
             <div className="user-type-icon">
               <Shield size={40} />
             </div>
@@ -206,7 +206,7 @@ const LandingPage = () => {
 
       {/* CTA Section */}
       <section className="cta-section">
-        <div className="cta-content glass">
+        <div className="cta-content glass fade-scale">
           <div className="cta-icon">
             <Zap size={48} />
           </div>
