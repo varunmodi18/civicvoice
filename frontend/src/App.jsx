@@ -1,7 +1,8 @@
 
 import React, { useEffect } from 'react';
-import { Routes, Route, Link, useNavigate } from 'react-router-dom';
+import { Routes, Route, Link, useNavigate, useLocation } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
+import LandingPage from '@/pages/LandingPage';
 import CitizenLoginPage from '@/features/auth/CitizenLoginPage';
 import AdminLoginPage from '@/features/auth/LoginPage';
 import DepartmentLoginPage from '@/features/auth/DepartmentLoginPage';
@@ -15,13 +16,20 @@ import { fetchMe } from '@/features/auth/authSlice';
 const AppShell = ({ children }) => {
   const { user } = useSelector((state) => state.auth);
   const navigate = useNavigate();
+  const location = useLocation();
+  const isLandingPage = location.pathname === '/';
 
   const handleLogoClick = () => {
     if (user?.role === 'citizen') navigate('/citizen');
     else if (user?.role === 'admin') navigate('/admin');
     else if (user?.role === 'department') navigate('/department');
-    else navigate('/login/citizen');
+    else navigate('/');
   };
+
+  // Don't show header/footer on landing page
+  if (isLandingPage) {
+    return <div className="app-root">{children}</div>;
+  }
 
   return (
     <div className="app-root">
@@ -78,7 +86,7 @@ const App = () => {
   return (
     <AppShell>
       <Routes>
-        <Route path="/" element={<CitizenLoginPage />} />
+        <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<AdminLoginPage />} />
         <Route path="/login/citizen" element={<CitizenLoginPage />} />
         <Route path="/login/admin" element={<AdminLoginPage />} />
