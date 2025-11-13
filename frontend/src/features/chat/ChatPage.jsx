@@ -273,7 +273,7 @@ const ChatPage = () => {
             {choiceOptions.map((option) => (
               <button
                 key={option.value}
-                className="choice-btn"
+                className={`choice-btn ${steps[stepIndex]?.key === 'severity' ? `severity-${option.value}` : ''}`}
                 onClick={() => handleChoiceClick(option.value)}
               >
                 <span className="choice-icon">{option.icon}</span>

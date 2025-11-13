@@ -43,6 +43,79 @@
   color: #666;
 }
 
+/* Filter Section Customization */
+.citizen-myissues-card .filter-section {
+  padding: 0.75rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 0;
+  border-bottom: 1px solid var(--border-subtle);
+  background: rgba(102, 126, 234, 0.02);
+}
+
+.citizen-myissues-card .filter-toggle-btn {
+  min-width: 200px;
+}
+
+.citizen-myissues-card .filter-panel {
+  width: 100%;
+  margin-top: 1rem;
+  padding: 0;
+  background: transparent;
+  border: none;
+  animation: slide-down 0.3s ease-out;
+}
+
+.citizen-myissues-card .filter-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: center;
+  margin-bottom: 1rem;
+}
+
+.citizen-myissues-card .filter-group {
+  min-width: 150px;
+  flex: 0 1 auto;
+}
+
+.citizen-myissues-card .filter-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0;
+  border-top: none;
+  margin-top: 0.5rem;
+  width: 100%;
+  max-width: 100%;
+}
+
+.citizen-myissues-card .filter-result-count {
+  flex: 1;
+  text-align: center;
+}
+
+@media (max-width: 768px) {
+  .citizen-myissues-card .filter-grid {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .citizen-myissues-card .filter-group {
+    min-width: 100%;
+  }
+
+  .citizen-myissues-card .filter-actions {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .citizen-myissues-card .filter-actions button {
+    width: 100%;
+  }
+}
+
 .citizen-myissues-list {
   flex: 1;
   overflow-y: auto;

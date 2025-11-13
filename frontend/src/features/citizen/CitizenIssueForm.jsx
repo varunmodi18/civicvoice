@@ -291,7 +291,7 @@ const CitizenIssueForm = () => {
             <AlertCircle size={14} />
             Severity
           </label>
-          <select name="severity" value={form.severity} onChange={onChange}>
+          <select name="severity" value={form.severity} onChange={onChange} className={`severity-select severity-${form.severity}`}>
             <option value="low">Low</option>
             <option value="medium">Medium</option>
             <option value="high">High</option>

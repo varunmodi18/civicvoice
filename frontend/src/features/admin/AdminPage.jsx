@@ -25,6 +25,8 @@ import {
   FileText,
   RotateCcw,
   Image as ImageIcon,
+  Filter,
+  X,
 } from 'lucide-react';
 import '@/styles/AdminPage.css';
 
@@ -46,6 +48,16 @@ const AdminPage = () => {
   const [reopenComments, setReopenComments] = useState({});
   const [showReopenForm, setShowReopenForm] = useState({});
   const [selectedImage, setSelectedImage] = useState(null);
+  const [showFilters, setShowFilters] = useState(false);
+  const [filters, setFilters] = useState({
+    severity: '',
+    department: '',
+    status: '',
+    recurrence: '',
+    dateFrom: '',
+    dateTo: '',
+  });
+  const [activeTab, setActiveTab] = useState('complaints');
 
   useEffect(() => {
     dispatch(fetchIssues());
@@ -145,15 +157,63 @@ const AdminPage = () => {
     }
   };
 
+  const handleFilterChange = (key, value) => {
+    setFilters((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const clearFilters = () => {
+    setFilters({
+      severity: '',
+      department: '',
+      status: '',
+      recurrence: '',
+      dateFrom: '',
+      dateTo: '',
+    });
+  };
+
+  const filteredItems = useMemo(() => {
+    let filtered = [...items];
+
+    if (filters.severity) {
+      filtered = filtered.filter((i) => i.severity === filters.severity);
+    }
+
+    if (filters.department) {
+      filtered = filtered.filter((i) => i.forwardedTo?._id === filters.department);
+    }
+
+    if (filters.status) {
+      filtered = filtered.filter((i) => i.status === filters.status);
+    }
+
+    if (filters.recurrence) {
+      filtered = filtered.filter((i) => i.recurrence === filters.recurrence);
+    }
+
+    if (filters.dateFrom) {
+      const fromDate = new Date(filters.dateFrom);
+      filtered = filtered.filter((i) => new Date(i.createdAt) >= fromDate);
+    }
+
+    if (filters.dateTo) {
+      const toDate = new Date(filters.dateTo);
+      toDate.setHours(23, 59, 59, 999);
+      filtered = filtered.filter((i) => new Date(i.createdAt) <= toDate);
+    }
+
+    return filtered;
+  }, [items, filters]);
+
   const statusCounts = useMemo(() => {
     const counts = { pending: 0, in_review: 0, completed: 0 };
-    items.forEach((i) => {
+    filteredItems.forEach((i) => {
       if (i.status === 'pending') counts.pending += 1;
       else if (i.status === 'in_review') counts.in_review += 1;
       else if (i.status === 'completed') counts.completed += 1;
     });
     return counts;
-  }, [items]);
+  }, [filteredItems]);
 
   const formatDateTime = (iso) => {
     if (!iso) return '';
@@ -178,8 +238,7 @@ const AdminPage = () => {
             <div>
               <h2>Admin Dashboard</h2>
               <p>
-                View all complaints, forward them to departments, and monitor their
-                lifecycle.
+                Manage complaints, departments, and monitor the system.
               </p>
             </div>
           </div>
@@ -191,7 +250,26 @@ const AdminPage = () => {
           )}
         </div>
 
-        <div className="status-summary">
+        <div className="admin-tabs">
+          <button 
+            className={`admin-tab ${activeTab === 'complaints' ? 'active' : ''}`}
+            onClick={() => setActiveTab('complaints')}
+          >
+            <FileText size={18} />
+            Complaints Management
+          </button>
+          <button 
+            className={`admin-tab ${activeTab === 'departments' ? 'active' : ''}`}
+            onClick={() => setActiveTab('departments')}
+          >
+            <UserPlus size={18} />
+            Department Accounts
+          </button>
+        </div>
+
+        {activeTab === 'complaints' && (
+          <>
+            <div className="status-summary">
           <div className="status-pill">
             <AlertTriangle size={16} />
             Pending <span>{statusCounts.pending}</span>
@@ -206,11 +284,114 @@ const AdminPage = () => {
           </div>
         </div>
 
+        <div className="filter-section">
+          <button 
+            className="filter-toggle-btn secondary-btn"
+            onClick={() => setShowFilters(!showFilters)}
+          >
+            <Filter size={16} />
+            {showFilters ? 'Hide Filters' : 'Show Filters'}
+            {Object.values(filters).some(v => v) && (
+              <span className="filter-count">{Object.values(filters).filter(v => v).length}</span>
+            )}
+          </button>
+
+          {showFilters && (
+            <div className="filter-panel">
+              <div className="filter-grid">
+                <div className="filter-group">
+                  <label>Severity</label>
+                  <select 
+                    value={filters.severity} 
+                    onChange={(e) => handleFilterChange('severity', e.target.value)}
+                  >
+                    <option value="">All</option>
+                    <option value="low">Low</option>
+                    <option value="medium">Medium</option>
+                    <option value="high">High</option>
+                    <option value="critical">Critical</option>
+                  </select>
+                </div>
+
+                <div className="filter-group">
+                  <label>Department</label>
+                  <select 
+                    value={filters.department} 
+                    onChange={(e) => handleFilterChange('department', e.target.value)}
+                  >
+                    <option value="">All</option>
+                    {departments.map((dept) => (
+                      <option key={dept._id} value={dept._id}>
+                        {dept.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="filter-group">
+                  <label>Status</label>
+                  <select 
+                    value={filters.status} 
+                    onChange={(e) => handleFilterChange('status', e.target.value)}
+                  >
+                    <option value="">All</option>
+                    <option value="pending">Pending</option>
+                    <option value="in_review">In Review</option>
+                    <option value="completed">Completed</option>
+                    <option value="reopened">Reopened</option>
+                  </select>
+                </div>
+
+                <div className="filter-group">
+                  <label>Recurrence</label>
+                  <select 
+                    value={filters.recurrence} 
+                    onChange={(e) => handleFilterChange('recurrence', e.target.value)}
+                  >
+                    <option value="">All</option>
+                    <option value="new">New</option>
+                    <option value="recurring">Recurring</option>
+                    <option value="ongoing">Ongoing</option>
+                  </select>
+                </div>
+
+                <div className="filter-group">
+                  <label>Date From</label>
+                  <input 
+                    type="date" 
+                    value={filters.dateFrom}
+                    onChange={(e) => handleFilterChange('dateFrom', e.target.value)}
+                  />
+                </div>
+
+                <div className="filter-group">
+                  <label>Date To</label>
+                  <input 
+                    type="date" 
+                    value={filters.dateTo}
+                    onChange={(e) => handleFilterChange('dateTo', e.target.value)}
+                  />
+                </div>
+              </div>
+
+              <div className="filter-actions">
+                <button className="ghost-btn" onClick={clearFilters}>
+                  <X size={16} />
+                  Clear All
+                </button>
+                <span className="filter-result-count">
+                  Showing {filteredItems.length} of {items.length} complaints
+                </span>
+              </div>
+            </div>
+          )}
+        </div>
+
         {status === 'loading' && <p className="loading-text">Loading issues...</p>}
         {error && <p className="admin-error">{error}</p>}
 
         <div className="issue-list">
-          {items.map((issue) => (
+          {filteredItems.map((issue) => (
             <div key={issue._id} className="issue-card hover-float">
               <div className="issue-header">
                 <div>
@@ -220,7 +401,7 @@ const AdminPage = () => {
                     {issue.location}
                     <span>•</span>
                     <AlertTriangle size={14} />
-                    Severity: <strong>{issue.severity}</strong>
+                    Severity: <span className={`severity-badge severity-${issue.severity}`}>{issue.severity}</span>
                   </p>
                   <p className="issue-meta">
                     <code>CV-{issue._id.slice(-6).toUpperCase()}</code>
@@ -379,15 +560,18 @@ const AdminPage = () => {
               )}
             </div>
           ))}
-          {items.length === 0 && status !== 'loading' && (
+          {filteredItems.length === 0 && items.length === 0 && status !== 'loading' && (
             <p className="no-issues">
               <FileText size={24} />
               No issues yet. Ask citizens to submit one via the chat or quick form.
             </p>
           )}
         </div>
+          </>
+        )}
 
-        <div className="admin-section">
+        {activeTab === 'departments' && (
+          <div className="admin-section">
           <div className="admin-section-header">
             <UserPlus size={20} />
             <h3>Department Accounts</h3>
@@ -481,6 +665,7 @@ const AdminPage = () => {
             ))}
           </div>
         </div>
+        )}
       </div>
 
       {selectedImage && (

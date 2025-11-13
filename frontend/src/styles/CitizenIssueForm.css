@@ -68,6 +68,35 @@
   margin-bottom: 1rem;
 }
 
+/* Severity Select Styling */
+.severity-select {
+  font-weight: 600;
+}
+
+.severity-select.severity-low {
+  border-color: var(--severity-low);
+  color: var(--severity-low);
+  background: var(--severity-low-bg);
+}
+
+.severity-select.severity-medium {
+  border-color: var(--severity-medium);
+  color: var(--severity-medium);
+  background: var(--severity-medium-bg);
+}
+
+.severity-select.severity-high {
+  border-color: var(--severity-high);
+  color: var(--severity-high);
+  background: var(--severity-high-bg);
+}
+
+.severity-select.severity-critical {
+  border-color: var(--severity-critical);
+  color: var(--severity-critical);
+  background: var(--severity-critical-bg);
+}
+
 /* Evidence Upload Modal */
 .modal-overlay {
   position: fixed;
