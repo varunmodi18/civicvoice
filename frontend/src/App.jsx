@@ -6,6 +6,7 @@ import CitizenLoginPage from '@/features/auth/CitizenLoginPage';
 import AdminLoginPage from '@/features/auth/LoginPage';
 import DepartmentLoginPage from '@/features/auth/DepartmentLoginPage';
 import CitizenHomePage from '@/features/citizen/CitizenHomePage';
+import QuickReportPage from '@/features/citizen/QuickReportPage';
 import AdminPage from '@/features/admin/AdminPage';
 import DepartmentHomePage from '@/features/department/DepartmentHomePage';
 import AccountPage from '@/features/account/AccountPage';
@@ -34,9 +35,16 @@ const AppShell = ({ children }) => {
         </button>
         <nav className="nav-links">
           {user ? (
-            <Link to="/account" className="nav-link nav-pill">
-              My Account
-            </Link>
+            <>
+              {user.role === 'citizen' && (
+                <Link to="/quick-report" className="nav-link">
+                  Quick Report
+                </Link>
+              )}
+              <Link to="/account" className="nav-link nav-pill">
+                My Account
+              </Link>
+            </>
           ) : (
             <>
               <Link to="/login/citizen" className="nav-link">
@@ -76,6 +84,7 @@ const App = () => {
         <Route path="/login/admin" element={<AdminLoginPage />} />
         <Route path="/login/department" element={<DepartmentLoginPage />} />
         <Route path="/citizen" element={<CitizenHomePage />} />
+        <Route path="/quick-report" element={<QuickReportPage />} />
         <Route path="/admin" element={<AdminPage />} />
         <Route path="/department" element={<DepartmentHomePage />} />
         <Route path="/account" element={<AccountPage />} />

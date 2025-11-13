@@ -13,13 +13,13 @@
   margin: 0;
   font-size: 1.125rem;
   font-weight: 700;
-  color: #f1f5f9;
+  color: #333;
 }
 
 .settings-text {
   margin: 0 0 1.25rem;
   font-size: 0.875rem;
-  color: #94a3b8;
+  color: #666;
   line-height: 1.5;
 }
 
@@ -46,15 +46,15 @@
 }
 
 .settings-message.ok {
-  background: rgba(16, 185, 129, 0.1);
-  color: #34d399;
-  border: 1px solid rgba(16, 185, 129, 0.3);
+  background: #d1fae5;
+  color: #10b981;
+  border: 1px solid #6ee7b7;
 }
 
 .settings-message.error {
-  background: rgba(239, 68, 68, 0.1);
-  color: #fca5a5;
-  border: 1px solid rgba(239, 68, 68, 0.3);
+  background: #fee;
+  color: #ef4444;
+  border: 1px solid #fcc;
 }
 
 @media (max-width: 768px) {
