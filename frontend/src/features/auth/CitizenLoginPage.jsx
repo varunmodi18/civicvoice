@@ -32,8 +32,8 @@ const CitizenLoginPage = () => {
 
   return (
     <div className="auth-page">
-      <div className="auth-card glass fade-in">
-        <div className="auth-card-header">
+      <div className="auth-card glass scale-in">
+        <div className="auth-card-header slide-in-left stagger-1">
           <div className="auth-icon citizen">
             <User size={24} />
           </div>
@@ -44,7 +44,7 @@ const CitizenLoginPage = () => {
           </p>
         </div>
 
-        <div className="auth-toggle">
+        <div className="auth-toggle fade-in stagger-2">
           <button
             type="button"
             className={mode === 'login' ? 'active' : ''}
@@ -61,7 +61,7 @@ const CitizenLoginPage = () => {
           </button>
         </div>
 
-        <form className="auth-form" onSubmit={onSubmit}>
+        <form className="auth-form slide-in-right stagger-3" onSubmit={onSubmit}>
           {mode === 'register' && (
             <div className="form-group">
               <label>

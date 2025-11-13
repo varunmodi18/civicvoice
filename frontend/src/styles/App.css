@@ -455,6 +455,92 @@ body {
   }
 }
 
+.slide-in-left {
+  animation: slide-in-left 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes slide-in-left {
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.slide-in-right {
+  animation: slide-in-right 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes slide-in-right {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.scale-in {
+  animation: scale-in 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.fade-scale {
+  animation: fade-scale 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes fade-scale {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* Staggered animations */
+.stagger-1 {
+  animation-delay: 0.1s;
+  animation-fill-mode: backwards;
+}
+
+.stagger-2 {
+  animation-delay: 0.2s;
+  animation-fill-mode: backwards;
+}
+
+.stagger-3 {
+  animation-delay: 0.3s;
+  animation-fill-mode: backwards;
+}
+
+.stagger-4 {
+  animation-delay: 0.4s;
+  animation-fill-mode: backwards;
+}
+
+.stagger-5 {
+  animation-delay: 0.5s;
+  animation-fill-mode: backwards;
+}
+
 /* Forms */
 .form-group {
   display: flex;

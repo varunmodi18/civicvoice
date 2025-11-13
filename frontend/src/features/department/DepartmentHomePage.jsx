@@ -237,7 +237,7 @@ const DepartmentHomePage = () => {
           </div>
         </div>
 
-        <div className="status-summary dept-summary">
+        <div className="status-summary dept-summary slide-in-left stagger-1">
           <div className="status-pill">
             <AlertTriangle size={16} />
             Pending <span>{statusCounts.pending}</span>
@@ -252,7 +252,7 @@ const DepartmentHomePage = () => {
           </div>
         </div>
 
-        <div className="filter-section">
+        <div className="filter-section slide-in-right stagger-2">
           <button 
             className="filter-toggle-btn secondary-btn"
             onClick={() => setShowFilters(!showFilters)}
@@ -347,8 +347,8 @@ const DepartmentHomePage = () => {
               No complaints have been forwarded to this department yet.
             </p>
           )}
-          {filteredIssues.map((issue) => (
-            <div key={issue._id} className="dept-issue-card hover-float">
+          {filteredIssues.map((issue, idx) => (
+            <div key={issue._id} className={`dept-issue-card hover-float fade-scale stagger-${Math.min(idx + 1, 5)}`}>
               <div className="dept-issue-header">
                 <div>
                   <h3>{issue.issueType}</h3>

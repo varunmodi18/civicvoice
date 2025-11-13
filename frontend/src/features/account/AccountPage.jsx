@@ -29,8 +29,8 @@ const AccountPage = () => {
 
   return (
     <div className="account-page">
-      <div className="account-card glass slide-up">
-        <div className="account-header">
+      <div className="account-card glass scale-in">
+        <div className="account-header slide-in-left stagger-1">
           <button type="button" className="back-btn" onClick={handleBack}>
             <ArrowLeft size={20} />
             Back to Dashboard
@@ -52,14 +52,14 @@ const AccountPage = () => {
           </div>
         </div>
 
-        <div className="account-tabs">
+        <div className="account-tabs fade-in stagger-2">
           <button className="account-tab active">
             <Settings size={14} />
             Account Settings
           </button>
         </div>
 
-        <div className="account-content">
+        <div className="account-content slide-in-right stagger-3">
           <AccountSettings />
           <div className="account-actions">
             <button type="button" className="ghost-btn" onClick={handleLogout}>

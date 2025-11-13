@@ -23,8 +23,8 @@ const DepartmentLoginPage = () => {
 
   return (
     <div className="auth-page">
-      <div className="auth-card glass fade-in">
-        <div className="auth-card-header">
+      <div className="auth-card glass scale-in">
+        <div className="auth-card-header slide-in-left stagger-1">
           <div className="auth-icon department">
             <Building2 size={24} />
           </div>
@@ -35,7 +35,7 @@ const DepartmentLoginPage = () => {
           </p>
         </div>
 
-        <form className="auth-form" onSubmit={onSubmit}>
+        <form className="auth-form slide-in-right stagger-2" onSubmit={onSubmit}>
           <div className="form-group">
             <label>
               <Mail size={14} />
@@ -81,7 +81,7 @@ const DepartmentLoginPage = () => {
           </button>
         </form>
 
-        <div className="auth-hint">
+        <div className="auth-hint fade-in stagger-3">
           <p>
             Demo account: <code>roads@civicvoice.local</code> / <code>Dept@123</code>
           </p>

@@ -133,11 +133,11 @@ const CitizenIssueForm = () => {
   };
 
   return (
-    <div className="issue-form-card glass fade-in">
+    <div className="issue-form-card glass scale-in">
       {/* Evidence Upload Modal */}
       {showUploadModal && (
-        <div className="modal-overlay" onClick={() => setShowUploadModal(false)}>
-          <div className="modal-content evidence-modal" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-overlay fade-in" onClick={() => setShowUploadModal(false)}>
+          <div className="modal-content evidence-modal scale-in" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h3>Attach Evidence</h3>
               <button className="modal-close" onClick={() => setShowUploadModal(false)}>
