@@ -3,6 +3,7 @@ import { useDispatch } from 'react-redux';
 import { submitIssue, uploadEvidence } from '@/features/chat/chatSlice';
 import { fetchMyIssues } from '@/features/issues/issuesSlice';
 import { FileText, MapPin, Landmark, AlertCircle, MessageSquare, CheckCircle, XCircle, Paperclip, X, Image, Film, FileUp, Loader2 } from 'lucide-react';
+import Toast from '@/components/Toast';
 import '@/styles/CitizenIssueForm.css';
 
 const CitizenIssueForm = () => {
@@ -22,6 +23,7 @@ const CitizenIssueForm = () => {
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [uploadErrors, setUploadErrors] = useState([]);
+  const [showToast, setShowToast] = useState(false);
 
   const onChange = (e) => {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
@@ -35,6 +37,8 @@ const CitizenIssueForm = () => {
       const payload = { ...form, evidenceUrls };
       const res = await dispatch(submitIssue(payload)).unwrap();
       setMessage(`Filed complaint: ${res.issueId}`);
+      // Show success toast
+      setShowToast(true);
       setForm({
         issueType: '',
         location: '',
@@ -335,6 +339,13 @@ const CitizenIssueForm = () => {
           <XCircle size={16} />
           {error}
         </p>
+      )}
+
+      {showToast && (
+        <Toast 
+          message="Submitted Successfully!" 
+          onClose={() => setShowToast(false)}
+        />
       )}
     </div>
   );

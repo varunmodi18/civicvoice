@@ -270,15 +270,15 @@ const AdminPage = () => {
         {activeTab === 'complaints' && (
           <>
             <div className="status-summary">
-          <div className="status-pill">
+          <div className="status-pill pending">
             <AlertTriangle size={16} />
             Pending <span>{statusCounts.pending}</span>
           </div>
-          <div className="status-pill">
+          <div className="status-pill in_review">
             <Clock size={16} />
             In Review <span>{statusCounts.in_review}</span>
           </div>
-          <div className="status-pill">
+          <div className="status-pill completed">
             <CheckCircle size={16} />
             Completed <span>{statusCounts.completed}</span>
           </div>

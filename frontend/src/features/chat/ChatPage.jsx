@@ -12,6 +12,7 @@ import {
 } from './chatSlice';
 import { fetchMyIssues } from '@/features/issues/issuesSlice';
 import { MessageSquare, Send, Paperclip, RotateCcw, Loader2, User, Bot, X, FileText, Image, Film, FileUp } from 'lucide-react';
+import Toast from '@/components/Toast';
 import '@/styles/ChatPage.css';
 
 const ChatPage = () => {
@@ -24,6 +25,7 @@ const ChatPage = () => {
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [uploadErrors, setUploadErrors] = useState([]);
+  const [showToast, setShowToast] = useState(false);
   const chatBodyRef = useRef(null);
 
   const handleSend = async (e) => {
@@ -109,6 +111,8 @@ const ChatPage = () => {
         };
         try {
           await dispatch(submitIssue(payload)).unwrap();
+          // Show success toast
+          setShowToast(true);
           // Refresh the citizen's complaints list after successful submission
           if (user && user.role === 'citizen') {
             dispatch(fetchMyIssues());
@@ -430,6 +434,13 @@ const ChatPage = () => {
           </button>
         </form>
       </div>
+
+      {showToast && (
+        <Toast 
+          message="Submitted Successfully!" 
+          onClose={() => setShowToast(false)}
+        />
+      )}
     </div>
   );
 };

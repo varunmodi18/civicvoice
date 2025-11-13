@@ -337,7 +337,10 @@ body {
   letter-spacing: 0.02em;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 0.375rem;
+  min-width: 90px;
+  text-align: center;
 }
 
 .status-pending {
@@ -371,17 +374,45 @@ body {
   gap: 0.5rem;
   padding: 0.5rem 1rem;
   border-radius: 12px;
-  background: white;
-  border: 1px solid var(--border-subtle);
+  font-weight: 600;
+  border: 1.5px solid;
   font-size: 0.875rem;
-  font-weight: 500;
-  color: #666;
 }
 
 .status-pill span {
   font-weight: 700;
-  color: #333;
   font-size: 1.125rem;
+}
+
+/* Status pill color variants */
+.status-pill.pending {
+  background: #fff4e6;
+  color: #f59e0b;
+  border-color: #fbbf24;
+}
+
+.status-pill.pending span {
+  color: #d97706;
+}
+
+.status-pill.in_review {
+  background: #e0e7ff;
+  color: #667eea;
+  border-color: #a5b4fc;
+}
+
+.status-pill.in_review span {
+  color: #5a67d8;
+}
+
+.status-pill.completed {
+  background: #d1fae5;
+  color: #10b981;
+  border-color: #34d399;
+}
+
+.status-pill.completed span {
+  color: #059669;
 }
 
 /* Animations */
