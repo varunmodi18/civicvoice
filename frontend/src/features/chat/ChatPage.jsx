@@ -8,6 +8,7 @@ import {
   steps,
   submitIssue,
   uploadEvidence,
+  removeEvidenceFile,
 } from './chatSlice';
 import { fetchMyIssues } from '@/features/issues/issuesSlice';
 import { MessageSquare, Send, Paperclip, RotateCcw, Loader2, User, Bot, X, FileText, Image, Film, FileUp } from 'lucide-react';
@@ -147,6 +148,11 @@ const ChatPage = () => {
     setSelectedFiles(selectedFiles.filter((_, i) => i !== index));
   };
 
+  const removeUploadedFile = (index) => {
+    setUploadErrors([]);
+    dispatch(removeEvidenceFile(index));
+  };
+
   const handleUploadFiles = async () => {
     if (selectedFiles.length === 0) return;
     
@@ -244,15 +250,19 @@ const ChatPage = () => {
               )}
 
               <div className="file-upload-area">
-                <label className="file-upload-label">
+                <label className={`file-upload-label ${(selectedFiles.length + evidenceFiles.length) >= 3 ? 'disabled' : ''}`}>
                   <FileUp size={32} />
-                  <span>Click to select files</span>
+                  <span>
+                    {(selectedFiles.length + evidenceFiles.length) >= 3 
+                      ? 'Maximum 3 files reached. Remove files to add new ones.' 
+                      : 'Click to select files'}
+                  </span>
                   <input
                     type="file"
                     multiple
                     accept=".jpg,.jpeg,.png,.pdf,.mp4"
                     onChange={handleFileSelect}
-                    disabled={selectedFiles.length >= 3}
+                    disabled={(selectedFiles.length + evidenceFiles.length) >= 3}
                   />
                 </label>
               </div>
@@ -284,8 +294,13 @@ const ChatPage = () => {
                     <div key={index} className="file-item uploaded">
                       <div className="file-info">
                         <FileText size={20} />
-                        <p className="file-name">{file.filename}</p>
+                        <div>
+                          <p className="file-name">{file.filename}</p>
+                        </div>
                       </div>
+                      <button className="remove-file-btn" onClick={() => removeUploadedFile(index)}>
+                        <X size={16} />
+                      </button>
                     </div>
                   ))}
                 </div>
@@ -322,7 +337,6 @@ const ChatPage = () => {
           <button 
             className="secondary-btn" 
             onClick={() => setShowUploadModal(true)}
-            disabled={evidenceFiles.length >= 3}
           >
             <Paperclip size={16} />
             Attach evidence {evidenceFiles.length > 0 && `(${evidenceFiles.length})`}
