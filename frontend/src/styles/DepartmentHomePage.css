@@ -20,12 +20,12 @@
   width: 48px;
   height: 48px;
   border-radius: 12px;
-  background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   display: flex;
   align-items: center;
   justify-content: center;
   color: white;
-  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+  box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
   flex-shrink: 0;
 }
 
@@ -33,13 +33,13 @@
   margin: 0;
   font-size: 1.5rem;
   font-weight: 700;
-  color: #f1f5f9;
+  color: #333;
 }
 
 .department-header p {
   margin: 0.5rem 0 0;
   font-size: 0.9375rem;
-  color: #94a3b8;
+  color: #666;
   line-height: 1.5;
 }
 
@@ -69,32 +69,32 @@
   margin: 0 0 0.5rem;
   font-size: 1.125rem;
   font-weight: 700;
-  color: #f1f5f9;
+  color: #333;
 }
 
 .dept-issue-meta {
   margin: 0.25rem 0;
   font-size: 0.875rem;
-  color: #64748b;
+  color: #666;
   display: flex;
   align-items: center;
   gap: 0.5rem;
 }
 
 .dept-issue-meta code {
-  background: rgba(15, 23, 42, 0.8);
+  background: #f5f5f5;
   padding: 0.125rem 0.375rem;
   border-radius: 4px;
-  border: 1px solid var(--border-medium);
+  border: 1px solid #e0e0e0;
   font-size: 0.75rem;
-  color: #94a3b8;
+  color: #667eea;
   font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
 }
 
 .dept-issue-summary {
   margin: 0;
   font-size: 0.9375rem;
-  color: #cbd5e1;
+  color: #555;
   line-height: 1.6;
 }
 
@@ -128,7 +128,7 @@
   margin: 0 0 1rem;
   font-size: 0.875rem;
   font-weight: 600;
-  color: #cbd5e1;
+  color: #555;
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -162,14 +162,14 @@
 .issue-evidence {
   margin-top: 1rem;
   padding-top: 1rem;
-  border-top: 1px dashed var(--border-subtle);
+  border-top: 1px dashed #e0e0e0;
 }
 
 .issue-evidence h4 {
   margin: 0 0 0.75rem;
   font-size: 0.875rem;
   font-weight: 600;
-  color: #cbd5e1;
+  color: #555;
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -186,25 +186,151 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.5rem 0.75rem;
-  background: rgba(59, 130, 246, 0.1);
-  border: 1px solid rgba(59, 130, 246, 0.3);
+  background: #e0e7ff;
+  border: 1px solid #a5b4fc;
   border-radius: 6px;
-  color: #60a5fa;
+  color: #667eea;
   text-decoration: none;
   font-size: 0.875rem;
   font-weight: 500;
-  transition: all 0.2s;
+  transition: all 0.3s;
 }
 
 .evidence-link:hover {
-  background: rgba(59, 130, 246, 0.15);
-  border-color: rgba(59, 130, 246, 0.5);
-  color: #3b82f6;
+  background: #c7d2fe;
+  border-color: #667eea;
+  color: #5a67d8;
+  transform: translateY(-1px);
+}
+
+/* Resolution Evidence Upload Styles */
+.resolution-evidence-upload {
+  margin-top: 1rem;
+  padding: 1rem;
+  background: #f8f9ff;
+  border: 1px dashed #667eea;
+  border-radius: 8px;
+}
+
+.resolution-evidence-upload label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #555;
+  margin-bottom: 0.5rem;
+}
+
+.resolution-evidence-upload input[type="file"] {
+  font-size: 0.875rem;
+  padding: 0.5rem;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  background: white;
+  cursor: pointer;
+  width: 100%;
+}
+
+.resolution-evidence-upload input[type="file"]::-webkit-file-upload-button {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  margin-right: 0.75rem;
+}
+
+.resolution-evidence-upload input[type="file"]::-webkit-file-upload-button:hover {
+  opacity: 0.9;
+}
+
+.file-help-text {
+  margin: 0.5rem 0 0;
+  font-size: 0.75rem;
+  color: #666;
+}
+
+.selected-files-list {
+  margin-top: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.selected-file-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.625rem 0.75rem;
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.selected-file-item:hover {
+  border-color: #667eea;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.1);
+}
+
+.file-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.file-name {
+  font-size: 0.875rem;
+  color: #333;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.file-size {
+  font-size: 0.75rem;
+  color: #999;
+  white-space: nowrap;
+}
+
+.remove-file-btn {
+  background: #fee2e2;
+  color: #ef4444;
+  border: none;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 50%;
+  font-size: 1.25rem;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.remove-file-btn:hover {
+  background: #fecaca;
+  transform: scale(1.1);
+}
+
+.resolution-evidence {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px dashed #e0e0e0;
 }
 
 .no-issues {
   font-size: 0.9375rem;
-  color: #64748b;
+  color: #666;
   text-align: center;
   padding: 2rem;
   display: flex;

@@ -15,11 +15,11 @@
 .back-btn {
   background: transparent;
   border: none;
-  color: #94a3b8;
+  color: #999;
   font-size: 0.875rem;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -28,7 +28,7 @@
 }
 
 .back-btn:hover {
-  color: #60a5fa;
+  color: #667eea;
 }
 
 .account-header-wrapper {
@@ -48,12 +48,12 @@
   width: 48px;
   height: 48px;
   border-radius: 12px;
-  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   display: flex;
   align-items: center;
   justify-content: center;
   color: white;
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+  box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
   flex-shrink: 0;
 }
 
@@ -61,13 +61,13 @@
   margin: 0;
   font-size: 1.5rem;
   font-weight: 700;
-  color: #f1f5f9;
+  color: #333;
 }
 
 .account-header p {
   margin: 0.5rem 0 0;
   font-size: 0.9375rem;
-  color: #94a3b8;
+  color: #666;
 }
 
 .account-identity {
@@ -79,7 +79,7 @@
 
 .account-email {
   font-size: 0.875rem;
-  color: #cbd5e1;
+  color: #555;
 }
 
 .account-tabs {
@@ -92,28 +92,29 @@
 
 .account-tab {
   border-radius: 8px;
-  border: 1px solid var(--border-medium);
+  border: 1px solid #e0e0e0;
   padding: 0.625rem 1rem;
-  background: rgba(15, 23, 42, 0.6);
-  color: #cbd5e1;
+  background: white;
+  color: #666;
   font-size: 0.875rem;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
   display: flex;
   align-items: center;
   gap: 0.5rem;
 }
 
 .account-tab:hover {
-  background: rgba(15, 23, 42, 0.8);
-  border-color: var(--accent);
+  background: #f8f9ff;
+  border-color: #667eea;
+  color: #667eea;
 }
 
 .account-tab.active {
-  background: rgba(59, 130, 246, 0.15);
-  border-color: var(--accent);
-  color: #60a5fa;
+  background: #e0e7ff;
+  border-color: #667eea;
+  color: #667eea;
 }
 
 .account-content {
@@ -126,7 +127,7 @@
   display: flex;
   justify-content: flex-end;
   padding-top: 1rem;
-  border-top: 1px solid var(--border-subtle);
+  border-top: 1px solid #e0e0e0;
 }
 
 @media (max-width: 768px) {

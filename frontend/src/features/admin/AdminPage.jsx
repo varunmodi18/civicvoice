@@ -9,6 +9,7 @@ import {
   createDepartmentUser,
   updateDepartmentUser,
   deleteDepartmentUser,
+  reopenIssue,
 } from '@/features/issues/issuesSlice';
 import {
   Shield,
@@ -22,6 +23,8 @@ import {
   Trash2,
   MessageSquare,
   FileText,
+  RotateCcw,
+  Image as ImageIcon,
 } from 'lucide-react';
 import '@/styles/AdminPage.css';
 
@@ -40,6 +43,9 @@ const AdminPage = () => {
   });
   const [deptUserMessage, setDeptUserMessage] = useState(null);
   const [deptUserError, setDeptUserError] = useState(null);
+  const [reopenComments, setReopenComments] = useState({});
+  const [showReopenForm, setShowReopenForm] = useState({});
+  const [selectedImage, setSelectedImage] = useState(null);
 
   useEffect(() => {
     dispatch(fetchIssues());
@@ -111,6 +117,31 @@ const AdminPage = () => {
       } catch (err) {
         alert(err || 'Failed to delete complaint.');
       }
+    }
+  };
+
+  const handleReopenToggle = (issueId) => {
+    setShowReopenForm((prev) => ({ ...prev, [issueId]: !prev[issueId] }));
+  };
+
+  const handleReopenCommentChange = (issueId, value) => {
+    setReopenComments((prev) => ({ ...prev, [issueId]: value }));
+  };
+
+  const handleReopenSubmit = async (issueId) => {
+    const comment = reopenComments[issueId];
+    if (!comment || comment.trim() === '') {
+      alert('Please provide a reason for reopening this issue.');
+      return;
+    }
+
+    try {
+      await dispatch(reopenIssue({ id: issueId, comment })).unwrap();
+      setReopenComments((prev) => ({ ...prev, [issueId]: '' }));
+      setShowReopenForm((prev) => ({ ...prev, [issueId]: false }));
+      dispatch(fetchIssues());
+    } catch (err) {
+      alert(err || 'Failed to reopen issue.');
     }
   };
 
@@ -228,6 +259,32 @@ const AdminPage = () => {
                   </div>
                 </div>
               )}
+              {issue.resolutionEvidence && issue.resolutionEvidence.length > 0 && (
+                <div className="resolution-evidence-section">
+                  <h4>
+                    <ImageIcon size={14} />
+                    Resolution Evidence
+                  </h4>
+                  <div className="resolution-evidence-grid">
+                    {issue.resolutionEvidence.map((url, idx) => (
+                      <div
+                        key={idx}
+                        className="resolution-evidence-item"
+                        onClick={() => setSelectedImage(`${import.meta.env.VITE_API_URL || 'http://localhost:4000'}${url}`)}
+                      >
+                        <img
+                          src={`${import.meta.env.VITE_API_URL || 'http://localhost:4000'}${url}`}
+                          alt={`Resolution ${idx + 1}`}
+                        />
+                        <span className="evidence-overlay">
+                          <ImageIcon size={16} />
+                          View
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
               {issue.departmentUpdates && issue.departmentUpdates.length > 0 && (
                 <div className="issue-timeline">
                   <h4>
@@ -283,6 +340,43 @@ const AdminPage = () => {
                   Delete
                 </button>
               </div>
+              {issue.status === 'completed' && (
+                <div className="reopen-section">
+                  {!showReopenForm[issue._id] ? (
+                    <button
+                      className="reopen-btn"
+                      onClick={() => handleReopenToggle(issue._id)}
+                    >
+                      <RotateCcw size={16} />
+                      Reopen Issue
+                    </button>
+                  ) : (
+                    <div className="reopen-form">
+                      <textarea
+                        rows={3}
+                        placeholder="Please explain why you're reopening this issue..."
+                        value={reopenComments[issue._id] || ''}
+                        onChange={(e) => handleReopenCommentChange(issue._id, e.target.value)}
+                      />
+                      <div className="reopen-form-actions">
+                        <button
+                          className="reopen-submit-btn"
+                          onClick={() => handleReopenSubmit(issue._id)}
+                        >
+                          <RotateCcw size={16} />
+                          Submit Reopen Request
+                        </button>
+                        <button
+                          className="reopen-cancel-btn"
+                          onClick={() => handleReopenToggle(issue._id)}
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           ))}
           {items.length === 0 && status !== 'loading' && (
@@ -388,6 +482,17 @@ const AdminPage = () => {
           </div>
         </div>
       </div>
+
+      {selectedImage && (
+        <div className="image-modal" onClick={() => setSelectedImage(null)}>
+          <div className="image-modal-content">
+            <img src={selectedImage} alt="Resolution Evidence" />
+            <button className="image-modal-close" onClick={() => setSelectedImage(null)}>
+              ×
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

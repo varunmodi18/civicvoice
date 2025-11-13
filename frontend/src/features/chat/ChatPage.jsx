@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import {
   addUserMessage,
@@ -24,25 +24,34 @@ const ChatPage = () => {
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [uploadErrors, setUploadErrors] = useState([]);
+  const chatBodyRef = useRef(null);
 
   const handleSend = async (e) => {
     e.preventDefault();
     if (!input.trim()) return;
 
     const text = input.trim();
+    await handleAnswer(text);
+  };
+
+  const handleChoiceClick = async (choice) => {
+    await handleAnswer(choice);
+  };
+
+  const handleAnswer = async (text) => {
     const currentStep = steps[stepIndex];
     
     if (currentStep) {
       let value = text;
       
-      // Validate severity input
+      // Validate severity input (if manually typed)
       if (currentStep.key === 'severity') {
         const validSeverities = ['low', 'medium', 'high', 'critical'];
         if (!validSeverities.includes(text.toLowerCase())) {
           dispatch(addUserMessage(text));
           dispatch({
             type: 'chat/addSystemMessage',
-            payload: `Sorry, "${text}" is not a valid severity level. Please choose one of: low, medium, high, or critical.`,
+            payload: `Sorry, "${text}" is not a valid severity level. Please choose one of the options above.`,
           });
           setInput('');
           return;
@@ -50,14 +59,14 @@ const ChatPage = () => {
         value = text.toLowerCase();
       }
       
-      // Validate recurrence input
+      // Validate recurrence input (if manually typed)
       if (currentStep.key === 'recurrence') {
         const validRecurrences = ['new', 'recurring', 'ongoing'];
         if (!validRecurrences.includes(text.toLowerCase())) {
           dispatch(addUserMessage(text));
           dispatch({
             type: 'chat/addSystemMessage',
-            payload: `Sorry, "${text}" is not a valid option. Please choose one of: new, recurring, or ongoing.`,
+            payload: `Sorry, "${text}" is not a valid option. Please choose one of the options above.`,
           });
           setInput('');
           return;
@@ -182,11 +191,44 @@ const ChatPage = () => {
     return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
   };
 
+  // Auto-scroll to bottom when new messages arrive
+  useEffect(() => {
+    if (chatBodyRef.current) {
+      chatBodyRef.current.scrollTop = chatBodyRef.current.scrollHeight;
+    }
+  }, [messages]);
+
   const handleReset = () => {
     dispatch(resetChat());
     setSelectedFiles([]);
     setUploadErrors([]);
   };
+
+  const getChoiceOptions = () => {
+    const currentStep = steps[stepIndex];
+    if (!currentStep) return null;
+
+    if (currentStep.key === 'severity') {
+      return [
+        { value: 'low', label: 'Low', icon: '🔵', description: 'Minor issue' },
+        { value: 'medium', label: 'Medium', icon: '🟡', description: 'Moderate concern' },
+        { value: 'high', label: 'High', icon: '🟠', description: 'Serious problem' },
+        { value: 'critical', label: 'Critical', icon: '🔴', description: 'Urgent attention needed' },
+      ];
+    }
+
+    if (currentStep.key === 'recurrence') {
+      return [
+        { value: 'new', label: 'New', icon: '✨', description: 'First time noticing' },
+        { value: 'recurring', label: 'Recurring', icon: '🔄', description: 'Happened before' },
+        { value: 'ongoing', label: 'Ongoing', icon: '⏳', description: 'Continuous problem' },
+      ];
+    }
+
+    return null;
+  };
+
+  const choiceOptions = getChoiceOptions();
 
   return (
     <div className="chat-card glass slide-up">
@@ -208,7 +250,7 @@ const ChatPage = () => {
         )}
       </div>
 
-      <div className="chat-body">
+      <div className="chat-body" ref={chatBodyRef}>
         {messages.map((m, idx) => (
           <div
             key={idx}
@@ -224,6 +266,25 @@ const ChatPage = () => {
             </div>
           </div>
         ))}
+
+        {/* Show choice buttons when applicable */}
+        {choiceOptions && status !== 'loading' && !lastIssue && (
+          <div className="chat-choices">
+            {choiceOptions.map((option) => (
+              <button
+                key={option.value}
+                className="choice-btn"
+                onClick={() => handleChoiceClick(option.value)}
+              >
+                <span className="choice-icon">{option.icon}</span>
+                <div className="choice-content">
+                  <span className="choice-label">{option.label}</span>
+                  <span className="choice-description">{option.description}</span>
+                </div>
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Evidence Upload Modal */}

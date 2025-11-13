@@ -156,6 +156,20 @@ export const fetchMyIssues = createAsyncThunk(
   }
 );
 
+export const reopenIssue = createAsyncThunk(
+  'issues/reopenIssue',
+  async ({ id, comment }, thunkAPI) => {
+    try {
+      const res = await api.patch(`/issues/${id}/reopen`, { comment });
+      return res.data;
+    } catch (err) {
+      return thunkAPI.rejectWithValue(
+        err.response?.data?.message || 'Failed to reopen issue'
+      );
+    }
+  }
+);
+
 const issuesSlice = createSlice({
   name: 'issues',
   initialState: {
@@ -223,6 +237,15 @@ const issuesSlice = createSlice({
       })
       .addCase(fetchMyIssues.fulfilled, (state, action) => {
         state.myIssues = action.payload;
+      })
+      .addCase(reopenIssue.fulfilled, (state, action) => {
+        const updated = action.payload;
+        const idxCitizen = state.myIssues.findIndex((i) => i._id === updated._id);
+        if (idxCitizen !== -1) state.myIssues[idxCitizen] = updated;
+        const idxAdmin = state.items.findIndex((i) => i._id === updated._id);
+        if (idxAdmin !== -1) state.items[idxAdmin] = updated;
+        const idxDept = state.departmentIssues.findIndex((i) => i._id === updated._id);
+        if (idxDept !== -1) state.departmentIssues[idxDept] = updated;
       });
   },
 });

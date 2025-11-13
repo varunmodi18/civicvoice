@@ -13,6 +13,7 @@ const DepartmentHomePage = () => {
   const { departmentIssues } = useSelector((state) => state.issues);
   const [commentDrafts, setCommentDrafts] = useState({});
   const [statusDrafts, setStatusDrafts] = useState({});
+  const [resolutionFiles, setResolutionFiles] = useState({});
 
   useEffect(() => {
     dispatch(fetchDepartmentIssues());
@@ -36,9 +37,58 @@ const DepartmentHomePage = () => {
     setStatusDrafts((prev) => ({ ...prev, [id]: value }));
   };
 
+  const handleFileChange = (issueId, e) => {
+    const files = Array.from(e.target.files);
+    const errors = [];
+    const validFiles = [];
+
+    // Check maximum 3 files
+    const currentFiles = resolutionFiles[issueId] || [];
+    if (currentFiles.length + files.length > 3) {
+      alert('You can only attach up to 3 files');
+      return;
+    }
+
+    files.forEach(file => {
+      // Check file size (50MB)
+      if (file.size > 50 * 1024 * 1024) {
+        errors.push(`${file.name} exceeds 50MB limit`);
+        return;
+      }
+
+      // Check file type
+      const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf', 'video/mp4'];
+      if (!allowedTypes.includes(file.type)) {
+        errors.push(`${file.name} is not a valid file type (allowed: jpg, png, pdf, mp4)`);
+        return;
+      }
+
+      validFiles.push(file);
+    });
+
+    if (errors.length > 0) {
+      alert(errors.join('\n'));
+    }
+
+    if (validFiles.length > 0) {
+      setResolutionFiles((prev) => ({ 
+        ...prev, 
+        [issueId]: [...(prev[issueId] || []), ...validFiles] 
+      }));
+    }
+  };
+
+  const removeResolutionFile = (issueId, fileIndex) => {
+    setResolutionFiles((prev) => ({
+      ...prev,
+      [issueId]: prev[issueId].filter((_, i) => i !== fileIndex)
+    }));
+  };
+
   const handleSubmitUpdate = async (issueId) => {
     const comment = commentDrafts[issueId];
     const status = statusDrafts[issueId];
+    const files = resolutionFiles[issueId];
     
     // Find the current issue to check if status actually changed
     const currentIssue = departmentIssues.find(i => i._id === issueId);
@@ -50,20 +100,59 @@ const DepartmentHomePage = () => {
     }
 
     try {
+      // If there are files and status is being changed to completed, upload them first
+      let resolutionEvidence = [];
+      if (files && files.length > 0 && status === 'completed') {
+        console.log('Uploading files:', files);
+        const formData = new FormData();
+        files.forEach((file) => {
+          formData.append('files', file);
+        });
+
+        const uploadRes = await fetch(
+          `${import.meta.env.VITE_API_URL || 'http://localhost:4000'}/api/uploads/multiple`,
+          {
+            method: 'POST',
+            credentials: 'include', // Important: Send cookies with request
+            body: formData,
+            // Don't set Content-Type header - browser will set it automatically with boundary
+          }
+        );
+
+        console.log('Upload response status:', uploadRes.status);
+
+        if (!uploadRes.ok) {
+          const errorData = await uploadRes.json().catch(() => ({}));
+          console.error('Upload error:', errorData);
+          throw new Error(errorData.message || 'Failed to upload resolution evidence');
+        }
+
+        const uploadData = await uploadRes.json();
+        console.log('Upload data:', uploadData);
+        resolutionEvidence = uploadData.files ? uploadData.files.map(f => f.url) : [];
+      }
+
+      console.log('Submitting update with evidence:', resolutionEvidence);
+      
       await dispatch(
         departmentUpdateIssue({
           id: issueId,
           data: { 
             comment: comment || undefined, 
-            status: statusChanged ? status : undefined 
+            status: statusChanged ? status : undefined,
+            resolutionEvidence: resolutionEvidence.length > 0 ? resolutionEvidence : undefined
           },
         })
       ).unwrap();
 
       setCommentDrafts((prev) => ({ ...prev, [issueId]: '' }));
       setStatusDrafts((prev) => ({ ...prev, [issueId]: '' }));
+      setResolutionFiles((prev) => ({ ...prev, [issueId]: [] }));
+      
+      alert('Update submitted successfully!');
     } catch (err) {
-      alert(err || 'Failed to submit update. Please make sure you have permission to update this issue.');
+      console.error('Update error:', err);
+      alert(err.message || err.toString() || 'Failed to submit update. Please try again.');
     }
   };
 
@@ -198,6 +287,70 @@ const DepartmentHomePage = () => {
                   <option value="completed">Completed</option>
                 </select>
               </div>
+
+              {(statusDrafts[issue._id] === 'completed' || issue.status === 'completed') && (
+                <div className="resolution-evidence-upload">
+                  <label>
+                    <FileText size={16} />
+                    Upload Resolution Evidence (Photos/Documents):
+                  </label>
+                  <input
+                    type="file"
+                    multiple
+                    accept="image/jpeg,image/jpg,image/png,application/pdf,video/mp4"
+                    onChange={(e) => handleFileChange(issue._id, e)}
+                  />
+                  <p className="file-help-text">
+                    Max 3 files • 50MB each • Formats: JPG, PNG, PDF, MP4
+                  </p>
+                  {resolutionFiles[issue._id] && resolutionFiles[issue._id].length > 0 && (
+                    <div className="selected-files-list">
+                      {resolutionFiles[issue._id].map((file, idx) => (
+                        <div key={idx} className="selected-file-item">
+                          <div className="file-info">
+                            <FileText size={14} />
+                            <span className="file-name">{file.name}</span>
+                            <span className="file-size">
+                              ({(file.size / 1024 / 1024).toFixed(2)} MB)
+                            </span>
+                          </div>
+                          <button
+                            type="button"
+                            className="remove-file-btn"
+                            onClick={() => removeResolutionFile(issue._id, idx)}
+                            title="Remove file"
+                          >
+                            ×
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {issue.resolutionEvidence && issue.resolutionEvidence.length > 0 && (
+                <div className="issue-evidence resolution-evidence">
+                  <h4>
+                    <FileText size={14} />
+                    Resolution Evidence ({issue.resolutionEvidence.length})
+                  </h4>
+                  <div className="evidence-links">
+                    {issue.resolutionEvidence.map((url, idx) => (
+                      <a
+                        key={idx}
+                        href={`${import.meta.env.VITE_API_URL || 'http://localhost:4000'}${url}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="evidence-link"
+                      >
+                        <FileText size={14} />
+                        Resolution {idx + 1}
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               <div className="dept-comment-box">
                 <textarea

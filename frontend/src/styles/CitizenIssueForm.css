@@ -13,12 +13,12 @@
   width: 40px;
   height: 40px;
   border-radius: 10px;
-  background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   display: flex;
   align-items: center;
   justify-content: center;
   color: white;
-  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+  box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
   flex-shrink: 0;
 }
 
@@ -26,13 +26,13 @@
   margin: 0;
   font-size: 1.125rem;
   font-weight: 700;
-  color: #f1f5f9;
+  color: #333;
 }
 
 .issue-form-text {
   margin: 0.25rem 0 0;
   font-size: 0.875rem;
-  color: #94a3b8;
+  color: #666;
   line-height: 1.4;
 }
 
@@ -52,15 +52,15 @@
 }
 
 .issue-form-message.ok {
-  background: rgba(16, 185, 129, 0.1);
-  color: #34d399;
-  border: 1px solid rgba(16, 185, 129, 0.3);
+  background: #d1fae5;
+  color: #10b981;
+  border: 1px solid #6ee7b7;
 }
 
 .issue-form-message.error {
-  background: rgba(239, 68, 68, 0.1);
-  color: #fca5a5;
-  border: 1px solid rgba(239, 68, 68, 0.3);
+  background: #fee;
+  color: #ef4444;
+  border: 1px solid #fcc;
 }
 
 /* Button Spacing */
@@ -82,10 +82,10 @@
 }
 
 .modal-content {
-  background: rgba(15, 23, 42, 0.95);
-  border: 1px solid var(--border-medium);
-  border-radius: 16px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  background: rgba(255, 255, 255, 0.98);
+  border: 1px solid #e0e0e0;
+  border-radius: 20px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
   max-width: 600px;
   width: 100%;
   max-height: 90vh;
@@ -118,22 +118,22 @@
   margin: 0;
   font-size: 1.25rem;
   font-weight: 700;
-  color: #f1f5f9;
+  color: #333;
 }
 
 .modal-close {
   background: transparent;
   border: none;
-  color: #94a3b8;
+  color: #999;
   cursor: pointer;
   padding: 0.5rem;
   border-radius: 8px;
-  transition: all 0.2s;
+  transition: all 0.3s;
 }
 
 .modal-close:hover {
-  background: rgba(148, 163, 184, 0.1);
-  color: #f1f5f9;
+  background: #f5f5f5;
+  color: #667eea;
 }
 
 .modal-body {
@@ -145,21 +145,21 @@
 .modal-info {
   margin: 0 0 1.5rem;
   font-size: 0.875rem;
-  color: #94a3b8;
+  color: #666;
 }
 
 .upload-errors {
   margin-bottom: 1rem;
   padding: 0.75rem;
-  background: rgba(239, 68, 68, 0.1);
-  border: 1px solid rgba(239, 68, 68, 0.3);
+  background: #fee;
+  border: 1px solid #fcc;
   border-radius: 8px;
 }
 
 .error-text {
   margin: 0.25rem 0;
   font-size: 0.875rem;
-  color: #fca5a5;
+  color: #ef4444;
 }
 
 .file-upload-area {
@@ -173,18 +173,18 @@
   justify-content: center;
   gap: 0.75rem;
   padding: 2rem;
-  border: 2px dashed var(--border-medium);
+  border: 2px dashed #e0e0e0;
   border-radius: 12px;
-  background: rgba(15, 23, 42, 0.6);
+  background: #fafafa;
   cursor: pointer;
-  transition: all 0.2s;
-  color: #94a3b8;
+  transition: all 0.3s;
+  color: #666;
 }
 
 .file-upload-label:hover {
-  border-color: var(--accent);
-  background: rgba(59, 130, 246, 0.05);
-  color: #60a5fa;
+  border-color: #667eea;
+  background: #f8f9ff;
+  color: #667eea;
 }
 
 .file-upload-label.disabled {
@@ -193,9 +193,9 @@
 }
 
 .file-upload-label.disabled:hover {
-  border-color: var(--border-medium);
-  background: rgba(15, 23, 42, 0.6);
-  color: #94a3b8;
+  border-color: #e0e0e0;
+  background: #fafafa;
+  color: #666;
 }
 
 .file-upload-label input {
@@ -217,7 +217,7 @@
   margin: 0 0 0.75rem;
   font-size: 0.9375rem;
   font-weight: 600;
-  color: #cbd5e1;
+  color: #555;
 }
 
 .file-item {
@@ -226,14 +226,15 @@
   justify-content: space-between;
   padding: 0.75rem;
   margin-bottom: 0.5rem;
-  background: rgba(15, 23, 42, 0.6);
-  border: 1px solid var(--border-medium);
+  background: white;
+  border: 1px solid #e0e0e0;
   border-radius: 8px;
-  transition: all 0.2s;
+  transition: all 0.3s;
 }
 
 .file-item:hover {
-  background: rgba(15, 23, 42, 0.8);
+  background: #fafafa;
+  border-color: #667eea;
 }
 
 .file-item.uploaded {
@@ -245,35 +246,35 @@
   align-items: center;
   gap: 0.75rem;
   flex: 1;
-  color: #cbd5e1;
+  color: #555;
 }
 
 .file-name {
   margin: 0;
   font-size: 0.875rem;
   font-weight: 500;
-  color: #e2e8f0;
+  color: #333;
   word-break: break-word;
 }
 
 .file-size {
   margin: 0.25rem 0 0;
   font-size: 0.75rem;
-  color: #94a3b8;
+  color: #999;
 }
 
 .remove-file-btn {
   background: transparent;
   border: none;
-  color: #94a3b8;
+  color: #999;
   cursor: pointer;
   padding: 0.5rem;
   border-radius: 6px;
-  transition: all 0.2s;
+  transition: all 0.3s;
 }
 
 .remove-file-btn:hover {
-  background: rgba(239, 68, 68, 0.1);
+  background: #fee;
   color: #ef4444;
 }
 
