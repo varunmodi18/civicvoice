@@ -139,6 +139,51 @@
   transform: translateY(0);
 }
 
+/* Severity-colored choice buttons */
+.choice-btn.severity-low {
+  border-color: var(--severity-low);
+  background: var(--severity-low-bg);
+}
+
+.choice-btn.severity-low:hover {
+  border-color: var(--severity-low);
+  background: var(--severity-low-bg);
+  box-shadow: 0 4px 12px rgba(236, 72, 153, 0.3);
+}
+
+.choice-btn.severity-medium {
+  border-color: var(--severity-medium);
+  background: var(--severity-medium-bg);
+}
+
+.choice-btn.severity-medium:hover {
+  border-color: var(--severity-medium);
+  background: var(--severity-medium-bg);
+  box-shadow: 0 4px 12px rgba(234, 179, 8, 0.3);
+}
+
+.choice-btn.severity-high {
+  border-color: var(--severity-high);
+  background: var(--severity-high-bg);
+}
+
+.choice-btn.severity-high:hover {
+  border-color: var(--severity-high);
+  background: var(--severity-high-bg);
+  box-shadow: 0 4px 12px rgba(249, 115, 22, 0.3);
+}
+
+.choice-btn.severity-critical {
+  border-color: var(--severity-critical);
+  background: var(--severity-critical-bg);
+}
+
+.choice-btn.severity-critical:hover {
+  border-color: var(--severity-critical);
+  background: var(--severity-critical-bg);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
 .choice-icon {
   font-size: 1.5rem;
   flex-shrink: 0;

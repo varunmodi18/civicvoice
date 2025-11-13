@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchMyIssues, reopenIssue } from '@/features/issues/issuesSlice';
-import { FileText, MapPin, Building2, Clock, AlertCircle, RotateCcw, Image as ImageIcon } from 'lucide-react';
+import { FileText, MapPin, Building2, Clock, AlertCircle, RotateCcw, Image as ImageIcon, Filter, X, AlertTriangle } from 'lucide-react';
 import '@/styles/CitizenMyIssues.css';
 
 const CitizenMyIssues = () => {
@@ -10,6 +10,14 @@ const CitizenMyIssues = () => {
   const [reopenComments, setReopenComments] = useState({});
   const [showReopenForm, setShowReopenForm] = useState({});
   const [selectedImage, setSelectedImage] = useState(null);
+  const [showFilters, setShowFilters] = useState(false);
+  const [filters, setFilters] = useState({
+    severity: '',
+    status: '',
+    recurrence: '',
+    dateFrom: '',
+    dateTo: '',
+  });
 
   useEffect(() => {
     dispatch(fetchMyIssues());
@@ -40,6 +48,49 @@ const CitizenMyIssues = () => {
     }
   };
 
+  const handleFilterChange = (key, value) => {
+    setFilters((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const clearFilters = () => {
+    setFilters({
+      severity: '',
+      status: '',
+      recurrence: '',
+      dateFrom: '',
+      dateTo: '',
+    });
+  };
+
+  const filteredIssues = React.useMemo(() => {
+    let filtered = [...myIssues];
+
+    if (filters.severity) {
+      filtered = filtered.filter((i) => i.severity === filters.severity);
+    }
+
+    if (filters.status) {
+      filtered = filtered.filter((i) => i.status === filters.status);
+    }
+
+    if (filters.recurrence) {
+      filtered = filtered.filter((i) => i.recurrence === filters.recurrence);
+    }
+
+    if (filters.dateFrom) {
+      const fromDate = new Date(filters.dateFrom);
+      filtered = filtered.filter((i) => new Date(i.createdAt) >= fromDate);
+    }
+
+    if (filters.dateTo) {
+      const toDate = new Date(filters.dateTo);
+      toDate.setHours(23, 59, 59, 999);
+      filtered = filtered.filter((i) => new Date(i.createdAt) <= toDate);
+    }
+
+    return filtered;
+  }, [myIssues, filters]);
+
   const formatDateTime = (iso) => {
     if (!iso) return '';
     const d = new Date(iso);
@@ -65,14 +116,109 @@ const CitizenMyIssues = () => {
           </p>
         </div>
       </div>
+
+      <div className="filter-section">
+        <button 
+          className="filter-toggle-btn secondary-btn"
+          onClick={() => setShowFilters(!showFilters)}
+        >
+          <Filter size={16} />
+          {showFilters ? 'Hide Filters' : 'Show Filters'}
+          {Object.values(filters).some(v => v) && (
+            <span className="filter-count">{Object.values(filters).filter(v => v).length}</span>
+          )}
+        </button>
+
+        {showFilters && (
+          <div className="filter-panel">
+            <div className="filter-grid">
+              <div className="filter-group">
+                <label>Severity</label>
+                <select 
+                  value={filters.severity} 
+                  onChange={(e) => handleFilterChange('severity', e.target.value)}
+                >
+                  <option value="">All</option>
+                  <option value="low">Low</option>
+                  <option value="medium">Medium</option>
+                  <option value="high">High</option>
+                  <option value="critical">Critical</option>
+                </select>
+              </div>
+
+              <div className="filter-group">
+                <label>Status</label>
+                <select 
+                  value={filters.status} 
+                  onChange={(e) => handleFilterChange('status', e.target.value)}
+                >
+                  <option value="">All</option>
+                  <option value="pending">Pending</option>
+                  <option value="in_review">In Review</option>
+                  <option value="completed">Completed</option>
+                  <option value="reopened">Reopened</option>
+                </select>
+              </div>
+
+              <div className="filter-group">
+                <label>Recurrence</label>
+                <select 
+                  value={filters.recurrence} 
+                  onChange={(e) => handleFilterChange('recurrence', e.target.value)}
+                >
+                  <option value="">All</option>
+                  <option value="new">New</option>
+                  <option value="recurring">Recurring</option>
+                  <option value="ongoing">Ongoing</option>
+                </select>
+              </div>
+
+              <div className="filter-group">
+                <label>Date From</label>
+                <input 
+                  type="date" 
+                  value={filters.dateFrom}
+                  onChange={(e) => handleFilterChange('dateFrom', e.target.value)}
+                />
+              </div>
+
+              <div className="filter-group">
+                <label>Date To</label>
+                <input 
+                  type="date" 
+                  value={filters.dateTo}
+                  onChange={(e) => handleFilterChange('dateTo', e.target.value)}
+                />
+              </div>
+            </div>
+
+            <div className="filter-actions">
+              <button className="ghost-btn" onClick={clearFilters}>
+                <X size={16} />
+                Clear All
+              </button>
+              <span className="filter-result-count">
+                Showing {filteredIssues.length} of {myIssues.length} complaints
+              </span>
+            </div>
+          </div>
+        )}
+      </div>
+
       <div className="citizen-myissues-list">
-        {myIssues.length === 0 && (
+        {filteredIssues.length === 0 && myIssues.length === 0 && (
           <div className="citizen-myissues-empty">
             <AlertCircle size={24} />
             <p>No complaints yet. Use the chat or quick form to submit one.</p>
           </div>
         )}
-        {myIssues.map((issue) => (
+        {filteredIssues.length === 0 && myIssues.length > 0 && (
+          <div className="citizen-myissues-empty">
+            <AlertCircle size={24} />
+            <p>No complaints match the selected filters.</p>
+          </div>
+        )}
+        {filteredIssues.map((issue) => (
           <div key={issue._id} className="citizen-myissues-row hover-float">
             <div className="citizen-myissues-row-header">
               <span className="citizen-myissues-type">{issue.issueType}</span>
