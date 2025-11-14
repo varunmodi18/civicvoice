@@ -38,7 +38,7 @@ export const uploadEvidence = createAsyncThunk(
 
 const steps = [
   { key: 'issueType', prompt: 'What type of issue are you reporting?' },
-  { key: 'location', prompt: 'Where is this happening? Please share the location or landmark.' },
+  { key: 'location', prompt: 'Where is this happening? Drop a map pin or share the address/landmark.' },
   { key: 'landmark', prompt: 'Any nearby landmark? (You can type "skip" to continue.)' },
   { key: 'severity', prompt: 'How severe is it? (low, medium, high, critical)' },
   { key: 'description', prompt: 'Describe what you see in your own words.' },

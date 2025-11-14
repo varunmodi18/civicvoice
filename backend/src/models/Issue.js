@@ -19,6 +19,15 @@ const issueSchema = new mongoose.Schema(
   {
     issueType: { type: String, required: true },
     location: { type: String, required: true },
+    geoLocation: {
+      latitude: { type: Number },
+      longitude: { type: Number },
+      accuracy: { type: Number },
+      source: {
+        type: String,
+        enum: ['device_location', 'map_click', 'manual', 'search'],
+      },
+    },
     landmark: { type: String },
     severity: {
       type: String,

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import {
   addUserMessage,
@@ -13,6 +13,7 @@ import {
 import { fetchMyIssues } from '@/features/issues/issuesSlice';
 import { MessageSquare, Send, Paperclip, RotateCcw, Loader2, User, Bot, X, FileText, Image, Film, FileUp } from 'lucide-react';
 import Toast from '@/components/Toast';
+import LocationPicker from '@/components/LocationPicker';
 import '@/styles/ChatPage.css';
 
 const ChatPage = () => {
@@ -26,7 +27,21 @@ const ChatPage = () => {
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [uploadErrors, setUploadErrors] = useState([]);
   const [showToast, setShowToast] = useState(false);
+  const [mapLocation, setMapLocation] = useState(() => issueData?.geoLocation || null);
   const chatBodyRef = useRef(null);
+
+  useEffect(() => {
+    if (issueData?.geoLocation) {
+      const { latitude, longitude } = issueData.geoLocation;
+      if (
+        !mapLocation ||
+        mapLocation.latitude !== latitude ||
+        mapLocation.longitude !== longitude
+      ) {
+        setMapLocation(issueData.geoLocation);
+      }
+    }
+  }, [issueData?.geoLocation, mapLocation]);
 
   const handleSend = async (e) => {
     e.preventDefault();
@@ -125,6 +140,9 @@ const ChatPage = () => {
             [currentStep.key]: value,
             evidenceUrls,
           };
+          if (mapLocation?.latitude && mapLocation?.longitude) {
+            payload.geoLocation = mapLocation;
+          }
           
           await dispatch(submitIssue(payload)).unwrap();
           // Show success toast
@@ -207,7 +225,16 @@ const ChatPage = () => {
     dispatch(resetChat());
     setPendingFiles([]);
     setUploadErrors([]);
+    setMapLocation(null);
   };
+
+  const handleMapLocationChange = useCallback(
+    (coords) => {
+      setMapLocation(coords);
+      dispatch(captureAnswer({ key: 'geoLocation', value: coords }));
+    },
+    [dispatch]
+  );
 
   const getChoiceOptions = () => {
     const currentStep = steps[stepIndex];
@@ -234,6 +261,8 @@ const ChatPage = () => {
   };
 
   const choiceOptions = getChoiceOptions();
+  const isLocationStep = steps[stepIndex]?.key === 'location';
+  const shouldShowMap = isLocationStep || mapLocation || lastIssue;
 
   return (
     <div className="chat-card glass slide-up">
@@ -254,6 +283,23 @@ const ChatPage = () => {
           </span>
         )}
       </div>
+
+      {shouldShowMap && (
+        <div className="chat-map-block">
+          <LocationPicker
+            value={mapLocation}
+            onChange={lastIssue ? undefined : handleMapLocationChange}
+            readOnly={Boolean(lastIssue)}
+            helperText={lastIssue ? 'Location shared with the assigned officials.' : 'Search for the spot, drop a pin, or use your current location for faster resolution.'}
+            label="Pin the issue location"
+            height={220}
+            showLocateButton={!lastIssue}
+          />
+          {!lastIssue && (
+            <p className="chat-map-note">Admins and department officials can see any searched addresses, pinned spots, and shared coordinates.</p>
+          )}
+        </div>
+      )}
 
       <div className="chat-body" ref={chatBodyRef}>
         {messages.map((m, idx) => (

@@ -50,6 +50,19 @@
   color: #666;
 }
 
+.chat-map-block {
+  padding: 0 1.5rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.chat-map-note {
+  margin: 0;
+  font-size: 0.75rem;
+  color: #4b5563;
+}
+
 .chat-user-pill {
   font-size: 0.8125rem;
   font-weight: 500;

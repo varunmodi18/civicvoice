@@ -2,8 +2,9 @@ import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { fetchMyIssues } from '@/features/issues/issuesSlice';
 import api from '@/lib/apiClient';
-import { FileText, MapPin, Landmark, AlertCircle, MessageSquare, CheckCircle, XCircle, Paperclip, X, Image, Film, FileUp, Loader2 } from 'lucide-react';
+import { FileText, MapPin, Landmark, AlertCircle, MessageSquare, CheckCircle, XCircle, Paperclip, X, Image, Film, FileUp } from 'lucide-react';
 import Toast from '@/components/Toast';
+import LocationPicker from '@/components/LocationPicker';
 import '@/styles/CitizenIssueForm.css';
 
 const CitizenIssueForm = () => {
@@ -15,6 +16,7 @@ const CitizenIssueForm = () => {
     severity: 'medium',
     description: '',
   });
+  const [geoLocation, setGeoLocation] = useState(null);
   const [message, setMessage] = useState(null);
   const [error, setError] = useState(null);
   const [pendingFiles, setPendingFiles] = useState([]); // Files waiting to be uploaded
@@ -51,6 +53,9 @@ const CitizenIssueForm = () => {
       }
       
       const payload = { ...form, evidenceUrls };
+      if (geoLocation?.latitude && geoLocation?.longitude) {
+        payload.geoLocation = geoLocation;
+      }
       const res = await api.post('/issues', payload);
       setMessage(`Filed complaint: ${res.data.issueId}`);
       // Show success toast
@@ -62,6 +67,7 @@ const CitizenIssueForm = () => {
         severity: 'medium',
         description: '',
       });
+      setGeoLocation(null);
       setPendingFiles([]);
       // Refresh the citizen's complaints list after successful submission
       dispatch(fetchMyIssues());
@@ -238,6 +244,14 @@ const CitizenIssueForm = () => {
             placeholder="Area / street / locality"
             required
           />
+        </div>
+        <div className="issue-map-section">
+          <LocationPicker
+            value={geoLocation}
+            onChange={setGeoLocation}
+            helperText="Search for the address, drop a pin, or use your current location so field teams can reach faster."
+          />
+          <p className="issue-map-note">Search results, pinned coordinates, and shared locations are only visible to administrators and department officials.</p>
         </div>
         <div className="form-group">
           <label>

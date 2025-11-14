@@ -5,6 +5,7 @@ import {
   departmentUpdateIssue,
 } from '@/features/issues/issuesSlice';
 import { Building2, Clock, MapPin, AlertTriangle, Save, MessageSquare, FileText, Filter, X } from 'lucide-react';
+import LocationPicker from '@/components/LocationPicker';
 import '@/styles/DepartmentHomePage.css';
 
 const DepartmentHomePage = () => {
@@ -368,6 +369,18 @@ const DepartmentHomePage = () => {
                 </span>
               </div>
               <p className="dept-issue-summary">{issue.summary}</p>
+              {issue.geoLocation?.latitude && issue.geoLocation?.longitude && (
+                <div className="dept-issue-map">
+                  <LocationPicker
+                    value={issue.geoLocation}
+                    readOnly
+                    showLocateButton={false}
+                    label="Pinned location"
+                    helperText=""
+                    height={200}
+                  />
+                </div>
+              )}
 
               {issue.evidenceUrls && issue.evidenceUrls.length > 0 && (
                 <div className="issue-evidence">
