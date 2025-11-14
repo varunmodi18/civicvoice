@@ -18,6 +18,10 @@ const buildSummary = (issue) => {
     parts.push(`Recurrence: ${issue.recurrence}.`);
   }
 
+  if (issue.geoLocation?.latitude && issue.geoLocation?.longitude) {
+    parts.push('Precise map coordinates captured for field teams.');
+  }
+
   if (issue.evidenceUrls && issue.evidenceUrls.length > 0) {
     parts.push(
       `Citizen attached ${issue.evidenceUrls.length} piece(s) of evidence (photos/videos).`
@@ -49,6 +53,7 @@ const createIssue = async (req, res) => {
     contactPhone,
     contactEmail,
     preferredContactMethod,
+    geoLocation,
   } = req.body;
 
   if (!issueType || !location || !severity || !description) {
@@ -63,6 +68,28 @@ const createIssue = async (req, res) => {
     : evidenceUrls
     ? [evidenceUrls]
     : [];
+
+  let parsedGeoLocation = null;
+  if (geoLocation && typeof geoLocation === 'object') {
+    const latitude = Number(geoLocation.latitude);
+    const longitude = Number(geoLocation.longitude);
+    if (!Number.isNaN(latitude) && !Number.isNaN(longitude)) {
+      parsedGeoLocation = {
+        latitude,
+        longitude,
+      };
+      const accuracy = Number(geoLocation.accuracy);
+      if (!Number.isNaN(accuracy)) {
+        parsedGeoLocation.accuracy = accuracy;
+      }
+      if (
+        typeof geoLocation.source === 'string' &&
+        ['device_location', 'map_click', 'manual', 'search'].includes(geoLocation.source)
+      ) {
+        parsedGeoLocation.source = geoLocation.source;
+      }
+    }
+  }
 
   const issue = new Issue({
     issueType,
@@ -79,6 +106,7 @@ const createIssue = async (req, res) => {
     preferredContactMethod,
     status: 'pending',
     createdBy: req.user ? req.user._id : null,
+    geoLocation: parsedGeoLocation,
   });
 
   issue.summary = buildSummary(issue);

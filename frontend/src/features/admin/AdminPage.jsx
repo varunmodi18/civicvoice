@@ -29,6 +29,7 @@ import {
   X,
 } from 'lucide-react';
 import '@/styles/AdminPage.css';
+import LocationPicker from '@/components/LocationPicker';
 
 const AdminPage = () => {
   const dispatch = useDispatch();
@@ -432,6 +433,18 @@ const AdminPage = () => {
                 </span>
               </div>
               <p className="issue-summary">{issue.summary}</p>
+              {issue.geoLocation?.latitude && issue.geoLocation?.longitude && (
+                <div className="issue-map-display">
+                  <LocationPicker
+                    value={issue.geoLocation}
+                    readOnly
+                    showLocateButton={false}
+                    label="Pinned location"
+                    helperText=""
+                    height={200}
+                  />
+                </div>
+              )}
               {issue.forwardedTo && (
                 <p className="issue-meta">
                   <Building2 size={14} />

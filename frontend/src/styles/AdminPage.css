@@ -167,6 +167,14 @@
   line-height: 1.6;
 }
 
+.issue-map-display {
+  margin: 1rem 0;
+}
+
+.issue-map-display .location-picker {
+  gap: 0.5rem;
+}
+
 .issue-actions {
   margin-top: 1rem;
   display: flex;
