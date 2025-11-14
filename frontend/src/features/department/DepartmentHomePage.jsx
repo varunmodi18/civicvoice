@@ -239,15 +239,15 @@ const DepartmentHomePage = () => {
         </div>
 
         <div className="status-summary dept-summary slide-in-left stagger-1">
-          <div className="status-pill">
+          <div className="status-pill pending">
             <AlertTriangle size={16} />
             Pending <span>{statusCounts.pending}</span>
           </div>
-          <div className="status-pill">
+          <div className="status-pill in_review">
             <Clock size={16} />
             In Review <span>{statusCounts.in_review}</span>
           </div>
-          <div className="status-pill">
+          <div className="status-pill completed">
             <Save size={16} />
             Completed <span>{statusCounts.completed}</span>
           </div>
