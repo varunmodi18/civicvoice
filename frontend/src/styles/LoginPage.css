@@ -67,6 +67,7 @@
   padding: 0.375rem;
   border-radius: 10px;
   border: 1px solid #e0e0e0;
+  position: relative;
 }
 
 .auth-toggle button {
@@ -79,7 +80,9 @@
   background: transparent;
   color: #666;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  z-index: 2;
 }
 
 .auth-toggle button:hover {
@@ -91,10 +94,55 @@
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
   box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+  transform: scale(1.02);
 }
 
 .auth-form {
   margin-top: 0.5rem;
+  animation: form-slide-expand 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes form-slide-expand {
+  0% {
+    opacity: 0;
+    transform: translateX(-30px) scale(0.95);
+  }
+  60% {
+    opacity: 1;
+    transform: translateX(5px) scale(1.01);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+.form-group {
+  animation: form-group-expand 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  animation-fill-mode: backwards;
+}
+
+.form-group:nth-child(1) {
+  animation-delay: 0.05s;
+}
+
+.form-group:nth-child(2) {
+  animation-delay: 0.1s;
+}
+
+.form-group:nth-child(3) {
+  animation-delay: 0.15s;
+}
+
+@keyframes form-group-expand {
+  from {
+    opacity: 0;
+    transform: translateX(-20px) scaleY(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) scaleY(1);
+  }
 }
 
 .auth-error {

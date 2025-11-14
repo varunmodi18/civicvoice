@@ -249,6 +249,13 @@
   color: #555;
 }
 
+.upload-info {
+  margin: 0 0 0.75rem;
+  font-size: 0.8125rem;
+  color: #667eea;
+  font-style: italic;
+}
+
 .file-item {
   display: flex;
   align-items: center;

@@ -81,7 +81,7 @@ const LandingPage = () => {
             <div className="hero-buttons fade-in">
               <button 
                 className="cta-button primary"
-                onClick={() => navigate('/login')}
+                onClick={() => navigate('/login/citizen')}
               >
                 Get Started
                 <ArrowRight size={20} />
@@ -177,7 +177,7 @@ const LandingPage = () => {
             </div>
             <h3>Citizens</h3>
             <p>Report issues, track complaints, and see transparent resolutions</p>
-            <button className="user-type-btn" onClick={() => navigate('/login')}>
+            <button className="user-type-btn" onClick={() => navigate('/login/citizen')}>
               Report an Issue
             </button>
           </div>
@@ -187,7 +187,7 @@ const LandingPage = () => {
             </div>
             <h3>Departments</h3>
             <p>Receive complaints, update statuses, and upload resolution evidence</p>
-            <button className="user-type-btn" onClick={() => navigate('/login')}>
+            <button className="user-type-btn" onClick={() => navigate('/login/department')}>
               Department Login
             </button>
           </div>
@@ -197,7 +197,7 @@ const LandingPage = () => {
             </div>
             <h3>Administrators</h3>
             <p>Manage complaints, forward to departments, and oversee the entire system</p>
-            <button className="user-type-btn" onClick={() => navigate('/login')}>
+            <button className="user-type-btn" onClick={() => navigate('/login/admin')}>
               Admin Access
             </button>
           </div>
@@ -214,7 +214,7 @@ const LandingPage = () => {
           <p>Join thousands of citizens making their communities better</p>
           <button 
             className="cta-button large"
-            onClick={() => navigate('/login')}
+            onClick={() => navigate('/login/citizen')}
           >
             Get Started Now
             <ArrowRight size={24} />

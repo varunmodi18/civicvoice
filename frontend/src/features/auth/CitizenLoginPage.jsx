@@ -61,7 +61,7 @@ const CitizenLoginPage = () => {
           </button>
         </div>
 
-        <form className="auth-form slide-in-right stagger-3" onSubmit={onSubmit}>
+        <form key={mode} className="auth-form" onSubmit={onSubmit}>
           {mode === 'register' && (
             <div className="form-group">
               <label>
