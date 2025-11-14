@@ -17,13 +17,13 @@ import '@/styles/ChatPage.css';
 
 const ChatPage = () => {
   const dispatch = useDispatch();
-  const { messages, stepIndex, issueData, evidenceUrls, evidenceFiles, lastIssue, status } =
+  const { messages, stepIndex, issueData, lastIssue, status } =
     useSelector((state) => state.chat);
   const { user } = useSelector((state) => state.auth);
   const [input, setInput] = useState('');
+  const [pendingFiles, setPendingFiles] = useState([]); // Store files in component state
   const [uploading, setUploading] = useState(false);
   const [showUploadModal, setShowUploadModal] = useState(false);
-  const [selectedFiles, setSelectedFiles] = useState([]);
   const [uploadErrors, setUploadErrors] = useState([]);
   const [showToast, setShowToast] = useState(false);
   const chatBodyRef = useRef(null);
@@ -104,21 +104,40 @@ const ChatPage = () => {
       if (stepIndex < steps.length - 1) {
         dispatch(nextStep());
       } else {
-        const payload = {
-          ...issueData,
-          [currentStep.key]: value,
-          evidenceUrls,
-        };
+        // Final step - upload files first if any, then submit
+        setUploading(true);
         try {
+          let evidenceUrls = [];
+          
+          // Upload pending files if any
+          if (pendingFiles.length > 0) {
+            const formData = new FormData();
+            pendingFiles.forEach(file => {
+              formData.append('files', file);
+            });
+            
+            const uploadRes = await dispatch(uploadEvidence(pendingFiles)).unwrap();
+            evidenceUrls = uploadRes.files.map(f => f.url);
+          }
+          
+          const payload = {
+            ...issueData,
+            [currentStep.key]: value,
+            evidenceUrls,
+          };
+          
           await dispatch(submitIssue(payload)).unwrap();
           // Show success toast
           setShowToast(true);
+          setPendingFiles([]); // Clear pending files
           // Refresh the citizen's complaints list after successful submission
           if (user && user.role === 'citizen') {
             dispatch(fetchMyIssues());
           }
         } catch (err) {
           // Error already handled in the slice
+        } finally {
+          setUploading(false);
         }
       }
     }
@@ -130,7 +149,7 @@ const ChatPage = () => {
     const validFiles = [];
 
     // Check maximum 3 files
-    if (selectedFiles.length + files.length > 3) {
+    if (pendingFiles.length + files.length > 3) {
       errors.push('You can only attach up to 3 files');
       setUploadErrors(errors);
       return;
@@ -154,32 +173,14 @@ const ChatPage = () => {
     });
 
     setUploadErrors(errors);
-    setSelectedFiles([...selectedFiles, ...validFiles]);
+    if (validFiles.length > 0) {
+      setPendingFiles([...pendingFiles, ...validFiles]);
+      setShowUploadModal(false);
+    }
   };
 
   const removeFile = (index) => {
-    setSelectedFiles(selectedFiles.filter((_, i) => i !== index));
-  };
-
-  const removeUploadedFile = (index) => {
-    setUploadErrors([]);
-    dispatch(removeEvidenceFile(index));
-  };
-
-  const handleUploadFiles = async () => {
-    if (selectedFiles.length === 0) return;
-    
-    setUploading(true);
-    try {
-      await dispatch(uploadEvidence(selectedFiles)).unwrap();
-      setSelectedFiles([]);
-      setShowUploadModal(false);
-      setUploadErrors([]);
-    } catch (err) {
-      setUploadErrors([err || 'Upload failed. Please try again.']);
-    } finally {
-      setUploading(false);
-    }
+    setPendingFiles(pendingFiles.filter((_, i) => i !== index));
   };
 
   const getFileIcon = (file) => {
@@ -204,7 +205,7 @@ const ChatPage = () => {
 
   const handleReset = () => {
     dispatch(resetChat());
-    setSelectedFiles([]);
+    setPendingFiles([]);
     setUploadErrors([]);
   };
 
@@ -315,10 +316,10 @@ const ChatPage = () => {
               )}
 
               <div className="file-upload-area">
-                <label className={`file-upload-label ${(selectedFiles.length + evidenceFiles.length) >= 3 ? 'disabled' : ''}`}>
+                <label className={`file-upload-label ${pendingFiles.length >= 3 ? 'disabled' : ''}`}>
                   <FileUp size={32} />
                   <span>
-                    {(selectedFiles.length + evidenceFiles.length) >= 3 
+                    {pendingFiles.length >= 3 
                       ? 'Maximum 3 files reached. Remove files to add new ones.' 
                       : 'Click to select files'}
                   </span>
@@ -327,15 +328,16 @@ const ChatPage = () => {
                     multiple
                     accept=".jpg,.jpeg,.png,.pdf,.mp4"
                     onChange={handleFileSelect}
-                    disabled={(selectedFiles.length + evidenceFiles.length) >= 3}
+                    disabled={pendingFiles.length >= 3}
                   />
                 </label>
               </div>
 
-              {selectedFiles.length > 0 && (
+              {pendingFiles.length > 0 && (
                 <div className="selected-files-list">
-                  <h4>Selected Files ({selectedFiles.length}/3)</h4>
-                  {selectedFiles.map((file, index) => (
+                  <h4>Attached Files ({pendingFiles.length}/3)</h4>
+                  <p className="upload-info">Files will be uploaded when you complete the chat</p>
+                  {pendingFiles.map((file, index) => (
                     <div key={index} className="file-item">
                       <div className="file-info">
                         {getFileIcon(file)}
@@ -351,46 +353,13 @@ const ChatPage = () => {
                   ))}
                 </div>
               )}
-
-              {evidenceFiles.length > 0 && (
-                <div className="uploaded-files-list">
-                  <h4>Already Uploaded ({evidenceFiles.length})</h4>
-                  {evidenceFiles.map((file, index) => (
-                    <div key={index} className="file-item uploaded">
-                      <div className="file-info">
-                        <FileText size={20} />
-                        <div>
-                          <p className="file-name">{file.filename}</p>
-                        </div>
-                      </div>
-                      <button className="remove-file-btn" onClick={() => removeUploadedFile(index)}>
-                        <X size={16} />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
             </div>
             <div className="modal-footer">
               <button 
-                className="ghost-btn" 
+                className="primary-btn" 
                 onClick={() => setShowUploadModal(false)}
               >
-                Cancel
-              </button>
-              <button 
-                className="primary-btn" 
-                onClick={handleUploadFiles}
-                disabled={selectedFiles.length === 0 || uploading}
-              >
-                {uploading ? (
-                  <>
-                    <Loader2 size={16} className="spin" />
-                    Uploading...
-                  </>
-                ) : (
-                  `Upload ${selectedFiles.length} file(s)`
-                )}
+                Done
               </button>
             </div>
           </div>
@@ -404,7 +373,7 @@ const ChatPage = () => {
             onClick={() => setShowUploadModal(true)}
           >
             <Paperclip size={16} />
-            Attach Evidence {evidenceFiles.length > 0 && `(${evidenceFiles.length})`}
+            Attach Evidence {pendingFiles.length > 0 && `(${pendingFiles.length})`}
           </button>
           {lastIssue && (
             <button type="button" className="ghost-btn" onClick={handleReset}>

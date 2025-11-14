@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
-import { submitIssue, uploadEvidence } from '@/features/chat/chatSlice';
 import { fetchMyIssues } from '@/features/issues/issuesSlice';
+import api from '@/lib/apiClient';
 import { FileText, MapPin, Landmark, AlertCircle, MessageSquare, CheckCircle, XCircle, Paperclip, X, Image, Film, FileUp, Loader2 } from 'lucide-react';
 import Toast from '@/components/Toast';
 import '@/styles/CitizenIssueForm.css';
@@ -17,11 +17,9 @@ const CitizenIssueForm = () => {
   });
   const [message, setMessage] = useState(null);
   const [error, setError] = useState(null);
-  const [evidenceUrls, setEvidenceUrls] = useState([]);
-  const [evidenceFiles, setEvidenceFiles] = useState([]);
+  const [pendingFiles, setPendingFiles] = useState([]); // Files waiting to be uploaded
   const [uploading, setUploading] = useState(false);
   const [showUploadModal, setShowUploadModal] = useState(false);
-  const [selectedFiles, setSelectedFiles] = useState([]);
   const [uploadErrors, setUploadErrors] = useState([]);
   const [showToast, setShowToast] = useState(false);
 
@@ -33,10 +31,28 @@ const CitizenIssueForm = () => {
     e.preventDefault();
     setMessage(null);
     setError(null);
+    setUploading(true);
+    
     try {
+      let evidenceUrls = [];
+      
+      // Upload files if there are any
+      if (pendingFiles.length > 0) {
+        const formData = new FormData();
+        pendingFiles.forEach(file => {
+          formData.append('files', file);
+        });
+        
+        const uploadRes = await api.post('/uploads/multiple', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        });
+        
+        evidenceUrls = uploadRes.data.files.map(f => f.url);
+      }
+      
       const payload = { ...form, evidenceUrls };
-      const res = await dispatch(submitIssue(payload)).unwrap();
-      setMessage(`Filed complaint: ${res.issueId}`);
+      const res = await api.post('/issues', payload);
+      setMessage(`Filed complaint: ${res.data.issueId}`);
       // Show success toast
       setShowToast(true);
       setForm({
@@ -46,12 +62,13 @@ const CitizenIssueForm = () => {
         severity: 'medium',
         description: '',
       });
-      setEvidenceUrls([]);
-      setEvidenceFiles([]);
+      setPendingFiles([]);
       // Refresh the citizen's complaints list after successful submission
       dispatch(fetchMyIssues());
     } catch (err) {
-      setError(err || 'Failed to submit');
+      setError(err.response?.data?.message || 'Failed to submit');
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -61,7 +78,7 @@ const CitizenIssueForm = () => {
     const validFiles = [];
 
     // Check maximum 3 files
-    if (selectedFiles.length + files.length > 3) {
+    if (pendingFiles.length + files.length > 3) {
       errors.push('You can only attach up to 3 files');
       setUploadErrors(errors);
       return;
@@ -85,38 +102,14 @@ const CitizenIssueForm = () => {
     });
 
     setUploadErrors(errors);
-    setSelectedFiles([...selectedFiles, ...validFiles]);
+    if (validFiles.length > 0) {
+      setPendingFiles([...pendingFiles, ...validFiles]);
+      setShowUploadModal(false);
+    }
   };
 
   const removeFile = (index) => {
-    setSelectedFiles(selectedFiles.filter((_, i) => i !== index));
-  };
-
-  const removeUploadedFile = (index) => {
-    setUploadErrors([]);
-    setEvidenceFiles(evidenceFiles.filter((_, i) => i !== index));
-    setEvidenceUrls(evidenceUrls.filter((_, i) => i !== index));
-  };
-
-  const handleUploadFiles = async () => {
-    if (selectedFiles.length === 0) return;
-    
-    setUploading(true);
-    try {
-      const result = await dispatch(uploadEvidence(selectedFiles)).unwrap();
-      const newUrls = result.files.map(f => f.url);
-      const newFiles = result.files;
-      
-      setEvidenceUrls([...evidenceUrls, ...newUrls]);
-      setEvidenceFiles([...evidenceFiles, ...newFiles]);
-      setSelectedFiles([]);
-      setShowUploadModal(false);
-      setUploadErrors([]);
-    } catch (err) {
-      setUploadErrors([err || 'Upload failed. Please try again.']);
-    } finally {
-      setUploading(false);
-    }
+    setPendingFiles(pendingFiles.filter((_, i) => i !== index));
   };
 
   const getFileIcon = (file) => {
@@ -158,10 +151,10 @@ const CitizenIssueForm = () => {
               )}
 
               <div className="file-upload-area">
-                <label className={`file-upload-label ${(selectedFiles.length + evidenceFiles.length) >= 3 ? 'disabled' : ''}`}>
+                <label className={`file-upload-label ${pendingFiles.length >= 3 ? 'disabled' : ''}`}>
                   <FileUp size={32} />
                   <span>
-                    {(selectedFiles.length + evidenceFiles.length) >= 3 
+                    {pendingFiles.length >= 3 
                       ? 'Maximum 3 files reached. Remove files to add new ones.' 
                       : 'Click to select files'}
                   </span>
@@ -170,15 +163,16 @@ const CitizenIssueForm = () => {
                     multiple
                     accept=".jpg,.jpeg,.png,.pdf,.mp4"
                     onChange={handleFileSelect}
-                    disabled={(selectedFiles.length + evidenceFiles.length) >= 3}
+                    disabled={pendingFiles.length >= 3}
                   />
                 </label>
               </div>
 
-              {selectedFiles.length > 0 && (
+              {pendingFiles.length > 0 && (
                 <div className="selected-files-list">
-                  <h4>Selected Files ({selectedFiles.length}/3)</h4>
-                  {selectedFiles.map((file, index) => (
+                  <h4>Attached Files ({pendingFiles.length}/3)</h4>
+                  <p className="upload-info">Files will be uploaded when you submit the form</p>
+                  {pendingFiles.map((file, index) => (
                     <div key={index} className="file-item">
                       <div className="file-info">
                         {getFileIcon(file)}
@@ -194,46 +188,13 @@ const CitizenIssueForm = () => {
                   ))}
                 </div>
               )}
-
-              {evidenceFiles.length > 0 && (
-                <div className="uploaded-files-list">
-                  <h4>Already Uploaded ({evidenceFiles.length})</h4>
-                  {evidenceFiles.map((file, index) => (
-                    <div key={index} className="file-item uploaded">
-                      <div className="file-info">
-                        <FileText size={20} />
-                        <div>
-                          <p className="file-name">{file.filename}</p>
-                        </div>
-                      </div>
-                      <button className="remove-file-btn" onClick={() => removeUploadedFile(index)}>
-                        <X size={16} />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
             </div>
             <div className="modal-footer">
               <button 
-                className="ghost-btn" 
+                className="primary-btn" 
                 onClick={() => setShowUploadModal(false)}
               >
-                Cancel
-              </button>
-              <button 
-                className="primary-btn" 
-                onClick={handleUploadFiles}
-                disabled={selectedFiles.length === 0 || uploading}
-              >
-                {uploading ? (
-                  <>
-                    <Loader2 size={16} className="spin" />
-                    Uploading...
-                  </>
-                ) : (
-                  `Upload ${selectedFiles.length} file(s)`
-                )}
+                Done
               </button>
             </div>
           </div>
@@ -322,10 +283,10 @@ const CitizenIssueForm = () => {
           onClick={() => setShowUploadModal(true)}
         >
           <Paperclip size={16} />
-          Attach Evidence {evidenceFiles.length > 0 && `(${evidenceFiles.length})`}
+          Attach Evidence {pendingFiles.length > 0 && `(${pendingFiles.length})`}
         </button>
-        <button type="submit" className="primary-btn w-full">
-          Submit Issue
+        <button type="submit" className="primary-btn w-full" disabled={uploading}>
+          {uploading ? 'Submitting...' : 'Submit Issue'}
         </button>
       </form>
       {message && (
