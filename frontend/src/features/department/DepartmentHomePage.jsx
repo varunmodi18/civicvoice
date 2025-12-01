@@ -4,7 +4,7 @@ import {
   fetchDepartmentIssues,
   departmentUpdateIssue,
 } from '@/features/issues/issuesSlice';
-import { Building2, Clock, MapPin, AlertTriangle, Save, MessageSquare, FileText, Filter, X } from 'lucide-react';
+import { Building2, Clock, MapPin, AlertTriangle, Save, MessageSquare, FileText, Filter, X, Maximize2, Star } from 'lucide-react';
 import LocationPicker from '@/components/LocationPicker';
 import '@/styles/DepartmentHomePage.css';
 
@@ -15,6 +15,7 @@ const DepartmentHomePage = () => {
   const [commentDrafts, setCommentDrafts] = useState({});
   const [statusDrafts, setStatusDrafts] = useState({});
   const [resolutionFiles, setResolutionFiles] = useState({});
+  const [expandedMap, setExpandedMap] = useState(null);
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState({
     severity: '',
@@ -371,13 +372,23 @@ const DepartmentHomePage = () => {
               <p className="dept-issue-summary">{issue.summary}</p>
               {issue.geoLocation?.latitude && issue.geoLocation?.longitude && (
                 <div className="dept-issue-map">
+                  <div className="map-header">
+                    <span className="map-label">Pinned location</span>
+                    <button 
+                      className="map-expand-btn"
+                      onClick={() => setExpandedMap(issue.geoLocation)}
+                      title="Expand map"
+                    >
+                      <Maximize2 size={16} />
+                    </button>
+                  </div>
                   <LocationPicker
                     value={issue.geoLocation}
                     readOnly
                     showLocateButton={false}
-                    label="Pinned location"
+                    label=""
                     helperText=""
-                    height={200}
+                    height={300}
                   />
                 </div>
               )}
@@ -426,6 +437,36 @@ const DepartmentHomePage = () => {
                       </li>
                     ))}
                   </ul>
+                </div>
+              )}
+
+              {issue.rating && (
+                <div className="existing-rating">
+                  <h4>
+                    <Star size={14} />
+                    Citizen Rating & Review
+                  </h4>
+                  <div className="stars-display">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <Star
+                        key={star}
+                        size={20}
+                        fill={star <= issue.rating ? '#fbbf24' : 'none'}
+                        color={star <= issue.rating ? '#fbbf24' : '#d1d5db'}
+                      />
+                    ))}
+                    <span className="rating-value">({issue.rating}/5)</span>
+                  </div>
+                  {issue.review && (
+                    <div className="review-text">
+                      <p>"{issue.review}"</p>
+                      {issue.reviewedAt && (
+                        <span className="review-date">
+                          Submitted on {formatDateTime(issue.reviewedAt)}
+                        </span>
+                      )}
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -524,6 +565,29 @@ const DepartmentHomePage = () => {
           ))}
         </div>
       </div>
+
+      {expandedMap && (
+        <div className="map-modal" onClick={() => setExpandedMap(null)}>
+          <div className="map-modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="map-modal-header">
+              <h3>Location Details</h3>
+              <button className="map-modal-close" onClick={() => setExpandedMap(null)}>
+                <X size={24} />
+              </button>
+            </div>
+            <div className="map-modal-body">
+              <LocationPicker
+                value={expandedMap}
+                readOnly
+                showLocateButton={false}
+                label=""
+                helperText=""
+                height={500}
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

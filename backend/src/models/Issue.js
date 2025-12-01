@@ -60,6 +60,13 @@ const issueSchema = new mongoose.Schema(
     createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     forwardedTo: { type: mongoose.Schema.Types.ObjectId, ref: 'Department' },
     departmentUpdates: [departmentUpdateSchema],
+    rating: { 
+      type: Number, 
+      min: 1, 
+      max: 5 
+    },
+    review: { type: String },
+    reviewedAt: { type: Date },
   },
   { timestamps: true }
 );

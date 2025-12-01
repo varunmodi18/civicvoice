@@ -8,6 +8,8 @@ const {
   listDepartmentUsers,
   updateDepartmentUser,
   deleteDepartmentUser,
+  processGeneralInput,
+  createComplaintFromStructuredData,
 } = require('../controllers/adminController');
 const { protect, adminOnly } = require('../middleware/authMiddleware');
 
@@ -22,5 +24,8 @@ router.get('/department-users', protect, adminOnly, listDepartmentUsers);
 router.post('/department-users', protect, adminOnly, createDepartmentUser);
 router.patch('/department-users/:id', protect, adminOnly, updateDepartmentUser);
 router.delete('/department-users/:id', protect, adminOnly, deleteDepartmentUser);
+
+router.post('/general-input', protect, adminOnly, processGeneralInput);
+router.post('/create-complaint', protect, adminOnly, createComplaintFromStructuredData);
 
 module.exports = router;

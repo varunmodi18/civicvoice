@@ -340,6 +340,43 @@ const deleteIssue = async (req, res) => {
   return res.json({ id, message: 'Issue deleted successfully' });
 };
 
+const rateIssue = async (req, res) => {
+  const { id } = req.params;
+  const { rating, review } = req.body;
+
+  if (!rating || rating < 1 || rating > 5) {
+    return res.status(400).json({ message: 'Rating must be between 1 and 5' });
+  }
+
+  const issue = await Issue.findById(id);
+  if (!issue) {
+    return res.status(404).json({ message: 'Issue not found' });
+  }
+
+  // Only allow rating completed issues
+  if (issue.status !== 'completed') {
+    return res.status(400).json({ message: 'Can only rate completed issues' });
+  }
+
+  // Check if the user is the creator or an admin
+  const userId = req.user.userId || req.user._id;
+  if (issue.createdBy && issue.createdBy.toString() !== userId.toString() && req.user.role !== 'admin') {
+    return res.status(403).json({ message: 'Not authorized to rate this issue' });
+  }
+
+  issue.rating = rating;
+  issue.review = review || '';
+  issue.reviewedAt = new Date();
+
+  await issue.save();
+
+  const populated = await Issue.findById(issue._id)
+    .populate('createdBy', 'name email')
+    .populate('forwardedTo', 'name');
+
+  return res.json(populated);
+};
+
 module.exports = {
   createIssue,
   getIssuesForAdmin,
@@ -349,4 +386,5 @@ module.exports = {
   addDepartmentUpdate,
   reopenIssue,
   deleteIssue,
+  rateIssue,
 };

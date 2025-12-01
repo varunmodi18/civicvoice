@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchMyIssues, reopenIssue } from '@/features/issues/issuesSlice';
-import { FileText, MapPin, Building2, Clock, AlertCircle, RotateCcw, Image as ImageIcon, Filter, X, AlertTriangle } from 'lucide-react';
+import api from '@/lib/apiClient';
+import { FileText, MapPin, Building2, Clock, AlertCircle, RotateCcw, Image as ImageIcon, Filter, X, AlertTriangle, Star } from 'lucide-react';
 import '@/styles/CitizenMyIssues.css';
 
 const CitizenMyIssues = () => {
@@ -9,6 +10,10 @@ const CitizenMyIssues = () => {
   const { myIssues } = useSelector((state) => state.issues);
   const [reopenComments, setReopenComments] = useState({});
   const [showReopenForm, setShowReopenForm] = useState({});
+  const [showRatingForm, setShowRatingForm] = useState({});
+  const [ratings, setRatings] = useState({});
+  const [reviews, setReviews] = useState({});
+  const [hoveredStar, setHoveredStar] = useState({});
   const [selectedImage, setSelectedImage] = useState(null);
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState({
@@ -45,6 +50,39 @@ const CitizenMyIssues = () => {
       dispatch(fetchMyIssues());
     } catch (err) {
       alert(err || 'Failed to reopen issue.');
+    }
+  };
+
+  const handleRatingToggle = (issueId) => {
+    setShowRatingForm((prev) => ({ ...prev, [issueId]: !prev[issueId] }));
+  };
+
+  const handleRatingChange = (issueId, rating) => {
+    setRatings((prev) => ({ ...prev, [issueId]: rating }));
+  };
+
+  const handleReviewChange = (issueId, value) => {
+    setReviews((prev) => ({ ...prev, [issueId]: value }));
+  };
+
+  const handleRatingSubmit = async (issueId) => {
+    const rating = ratings[issueId];
+    if (!rating) {
+      alert('Please select a rating.');
+      return;
+    }
+
+    try {
+      await api.patch(`/issues/${issueId}/rate`, {
+        rating,
+        review: reviews[issueId] || '',
+      });
+      setRatings((prev) => ({ ...prev, [issueId]: undefined }));
+      setReviews((prev) => ({ ...prev, [issueId]: '' }));
+      setShowRatingForm((prev) => ({ ...prev, [issueId]: false }));
+      dispatch(fetchMyIssues());
+    } catch (err) {
+      alert(err.response?.data?.message || 'Failed to submit rating.');
     }
   };
 
@@ -293,41 +331,122 @@ const CitizenMyIssues = () => {
             )}
 
             {issue.status === 'completed' && (
-              <div className="reopen-section">
-                {!showReopenForm[issue._id] ? (
-                  <button
-                    className="reopen-btn"
-                    onClick={() => handleReopenToggle(issue._id)}
-                  >
-                    <RotateCcw size={16} />
-                    Not Satisfied? Reopen Issue
-                  </button>
-                ) : (
-                  <div className="reopen-form">
-                    <textarea
-                      rows={3}
-                      placeholder="Please explain why you're reopening this issue..."
-                      value={reopenComments[issue._id] || ''}
-                      onChange={(e) => handleReopenCommentChange(issue._id, e.target.value)}
-                    />
-                    <div className="reopen-form-actions">
+              <>
+                {/* Rating Section */}
+                {!issue.rating && (
+                  <div className="rating-section">
+                    {!showRatingForm[issue._id] ? (
                       <button
-                        className="reopen-submit-btn"
-                        onClick={() => handleReopenSubmit(issue._id)}
+                        className="rating-btn"
+                        onClick={() => handleRatingToggle(issue._id)}
                       >
-                        <RotateCcw size={16} />
-                        Submit Reopen Request
+                        <Star size={16} />
+                        Rate Resolution
                       </button>
-                      <button
-                        className="reopen-cancel-btn"
-                        onClick={() => handleReopenToggle(issue._id)}
-                      >
-                        Cancel
-                      </button>
-                    </div>
+                    ) : (
+                      <div className="rating-form">
+                        <h4>Rate the Resolution</h4>
+                        <div className="stars-container">
+                          {[1, 2, 3, 4, 5].map((star) => (
+                            <button
+                              key={star}
+                              className={`star-btn ${
+                                (hoveredStar[issue._id] || ratings[issue._id] || 0) >= star
+                                  ? 'active'
+                                  : ''
+                              }`}
+                              onClick={() => handleRatingChange(issue._id, star)}
+                              onMouseEnter={() => setHoveredStar((prev) => ({ ...prev, [issue._id]: star }))}
+                              onMouseLeave={() => setHoveredStar((prev) => ({ ...prev, [issue._id]: 0 }))}
+                            >
+                              <Star size={24} fill={(hoveredStar[issue._id] || ratings[issue._id] || 0) >= star ? 'currentColor' : 'none'} />
+                            </button>
+                          ))}
+                        </div>
+                        <textarea
+                          rows={3}
+                          placeholder="Share your experience with the resolution (optional)..."
+                          value={reviews[issue._id] || ''}
+                          onChange={(e) => handleReviewChange(issue._id, e.target.value)}
+                        />
+                        <div className="rating-form-actions">
+                          <button
+                            className="rating-submit-btn"
+                            onClick={() => handleRatingSubmit(issue._id)}
+                          >
+                            <Star size={16} />
+                            Submit Rating
+                          </button>
+                          <button
+                            className="rating-cancel-btn"
+                            onClick={() => handleRatingToggle(issue._id)}
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
-              </div>
+
+                {/* Display existing rating */}
+                {issue.rating && (
+                  <div className="existing-rating">
+                    <h4>Your Rating</h4>
+                    <div className="stars-display">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <Star
+                          key={star}
+                          size={20}
+                          fill={star <= issue.rating ? '#fbbf24' : 'none'}
+                          color={star <= issue.rating ? '#fbbf24' : '#d1d5db'}
+                        />
+                      ))}
+                      <span className="rating-text">({issue.rating}/5)</span>
+                    </div>
+                    {issue.review && (
+                      <p className="review-text">{issue.review}</p>
+                    )}
+                  </div>
+                )}
+
+                {/* Reopen Section */}
+                <div className="reopen-section">
+                  {!showReopenForm[issue._id] ? (
+                    <button
+                      className="reopen-btn"
+                      onClick={() => handleReopenToggle(issue._id)}
+                    >
+                      <RotateCcw size={16} />
+                      Not Satisfied? Reopen Issue
+                    </button>
+                  ) : (
+                    <div className="reopen-form">
+                      <textarea
+                        rows={3}
+                        placeholder="Please explain why you're reopening this issue..."
+                        value={reopenComments[issue._id] || ''}
+                        onChange={(e) => handleReopenCommentChange(issue._id, e.target.value)}
+                      />
+                      <div className="reopen-form-actions">
+                        <button
+                          className="reopen-submit-btn"
+                          onClick={() => handleReopenSubmit(issue._id)}
+                        >
+                          <RotateCcw size={16} />
+                          Submit Reopen Request
+                        </button>
+                        <button
+                          className="reopen-cancel-btn"
+                          onClick={() => handleReopenToggle(issue._id)}
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </>
             )}
           </div>
         ))}

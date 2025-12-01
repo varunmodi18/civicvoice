@@ -29,6 +29,20 @@ const CitizenIssueForm = () => {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
+  const handleLocationChange = (coords) => {
+    setGeoLocation(coords);
+    // Auto-fill location field with address or location name, but keep it editable
+    if (coords?.address && coords.address.trim() !== '') {
+      setForm((prev) => ({ ...prev, location: coords.address }));
+    } else if (coords?.locationName && coords.locationName.trim() !== '') {
+      // Use location name if available
+      setForm((prev) => ({ ...prev, location: coords.locationName }));
+    } else if (coords?.latitude && coords?.longitude) {
+      // If no address or name, leave empty for user to fill
+      // Don't auto-fill with coordinates
+    }
+  };
+
   const onSubmit = async (e) => {
     e.preventDefault();
     setMessage(null);
@@ -248,7 +262,7 @@ const CitizenIssueForm = () => {
         <div className="issue-map-section">
           <LocationPicker
             value={geoLocation}
-            onChange={setGeoLocation}
+            onChange={handleLocationChange}
             helperText="Search for the address, drop a pin, or use your current location so field teams can reach faster."
           />
           <p className="issue-map-note">Search results, pinned coordinates, and shared locations are only visible to administrators and department officials.</p>

@@ -9,6 +9,7 @@ const {
   addDepartmentUpdate,
   reopenIssue,
   deleteIssue,
+  rateIssue,
 } = require('../controllers/issueController');
 const { protect, adminOnly, departmentOnly } = require('../middleware/authMiddleware');
 
@@ -25,5 +26,6 @@ router.patch('/:id/department-update', protect, departmentOnly, addDepartmentUpd
 
 router.get('/mine', protect, getIssuesForCitizen);
 router.patch('/:id/reopen', protect, reopenIssue);
+router.patch('/:id/rate', protect, rateIssue);
 
 module.exports = router;

@@ -27,7 +27,13 @@ import {
   Image as ImageIcon,
   Filter,
   X,
+  Maximize2,
+  User,
+  Phone,
+  Mail,
+  Star,
 } from 'lucide-react';
+import api from '@/lib/apiClient';
 import '@/styles/AdminPage.css';
 import LocationPicker from '@/components/LocationPicker';
 
@@ -49,6 +55,7 @@ const AdminPage = () => {
   const [reopenComments, setReopenComments] = useState({});
   const [showReopenForm, setShowReopenForm] = useState({});
   const [selectedImage, setSelectedImage] = useState(null);
+  const [expandedMap, setExpandedMap] = useState(null);
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState({
     severity: '',
@@ -61,6 +68,11 @@ const AdminPage = () => {
   const [activeTab, setActiveTab] = useState('complaints');
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
+  const [generalInput, setGeneralInput] = useState('');
+  const [generalInputMessage, setGeneralInputMessage] = useState(null);
+  const [generalInputError, setGeneralInputError] = useState(null);
+  const [structuredData, setStructuredData] = useState(null);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   useEffect(() => {
     dispatch(fetchIssues());
@@ -123,6 +135,64 @@ const AdminPage = () => {
         // ignore
       }
     }
+  };
+
+  const handleGeneralInputSubmit = async (e) => {
+    e.preventDefault();
+    setGeneralInputMessage(null);
+    setGeneralInputError(null);
+    setStructuredData(null);
+
+    if (!generalInput || generalInput.trim() === '') {
+      setGeneralInputError('Please enter some text to submit.');
+      return;
+    }
+
+    setIsProcessing(true);
+
+    try {
+      const response = await api.post('/admin/general-input', { text: generalInput });
+
+      setStructuredData(response.data.structuredData);
+      setGeneralInputMessage('Text processed successfully! Review the extracted data below and click "Create Complaint" to submit.');
+    } catch (err) {
+      setGeneralInputError(err.message || 'Failed to process input.');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handleCreateComplaint = async () => {
+    if (!structuredData) return;
+
+    setGeneralInputMessage(null);
+    setGeneralInputError(null);
+    setIsProcessing(true);
+
+    try {
+      await api.post('/admin/create-complaint', structuredData);
+
+      setGeneralInputMessage('Complaint submitted successfully to the common channel!');
+      
+      // Reset form completely
+      setTimeout(() => {
+        setGeneralInput('');
+        setStructuredData(null);
+        setGeneralInputMessage(null);
+        setGeneralInputError(null);
+      }, 2000);
+      
+      // Refresh issues list to show the newly created complaint
+      dispatch(fetchIssues());
+    } catch (err) {
+      setGeneralInputError(err.message || 'Failed to create complaint.');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handleStructuredDataChange = (field, value) => {
+    setStructuredData((prev) => ({ ...prev, [field]: value }));
   };
 
   const handleDeleteIssue = async (issueId) => {
@@ -280,6 +350,13 @@ const AdminPage = () => {
             Complaints Management
           </button>
           <button 
+            className={`admin-tab ${activeTab === 'general-input' ? 'active' : ''}`}
+            onClick={() => setActiveTab('general-input')}
+          >
+            <MessageSquare size={18} />
+            General Input
+          </button>
+          <button 
             className={`admin-tab ${activeTab === 'departments' ? 'active' : ''}`}
             onClick={() => setActiveTab('departments')}
           >
@@ -435,13 +512,23 @@ const AdminPage = () => {
               <p className="issue-summary">{issue.summary}</p>
               {issue.geoLocation?.latitude && issue.geoLocation?.longitude && (
                 <div className="issue-map-display">
+                  <div className="map-header">
+                    <span className="map-label">Pinned location</span>
+                    <button 
+                      className="map-expand-btn"
+                      onClick={() => setExpandedMap(issue.geoLocation)}
+                      title="Expand map"
+                    >
+                      <Maximize2 size={16} />
+                    </button>
+                  </div>
                   <LocationPicker
                     value={issue.geoLocation}
                     readOnly
                     showLocateButton={false}
-                    label="Pinned location"
+                    label=""
                     helperText=""
-                    height={200}
+                    height={300}
                   />
                 </div>
               )}
@@ -450,6 +537,37 @@ const AdminPage = () => {
                   <Building2 size={14} />
                   Forwarded to: <strong>{issue.forwardedTo.name}</strong>
                 </p>
+              )}
+              {(issue.contactName || issue.contactPhone || issue.contactEmail) && (
+                <div className="complainant-details">
+                  <h4>
+                    <User size={14} />
+                    Complainant Details
+                  </h4>
+                  <div className="contact-info">
+                    {issue.contactName && (
+                      <p className="contact-item">
+                        <User size={14} />
+                        <span className="contact-label">Name:</span>
+                        <span className="contact-value">{issue.contactName}</span>
+                      </p>
+                    )}
+                    {issue.contactPhone && (
+                      <p className="contact-item">
+                        <Phone size={14} />
+                        <span className="contact-label">Phone:</span>
+                        <span className="contact-value">{issue.contactPhone}</span>
+                      </p>
+                    )}
+                    {issue.contactEmail && (
+                      <p className="contact-item">
+                        <Mail size={14} />
+                        <span className="contact-label">Email:</span>
+                        <span className="contact-value">{issue.contactEmail}</span>
+                      </p>
+                    )}
+                  </div>
+                </div>
               )}
               {issue.evidenceUrls && issue.evidenceUrls.length > 0 && (
                 <div className="issue-evidence">
@@ -520,6 +638,35 @@ const AdminPage = () => {
                       </li>
                     ))}
                   </ul>
+                </div>
+              )}
+              {issue.rating && (
+                <div className="existing-rating">
+                  <h4>
+                    <Star size={14} />
+                    Citizen Rating & Review
+                  </h4>
+                  <div className="stars-display">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <Star
+                        key={star}
+                        size={20}
+                        fill={star <= issue.rating ? '#fbbf24' : 'none'}
+                        color={star <= issue.rating ? '#fbbf24' : '#d1d5db'}
+                      />
+                    ))}
+                    <span className="rating-value">({issue.rating}/5)</span>
+                  </div>
+                  {issue.review && (
+                    <div className="review-text">
+                      <p>"{issue.review}"</p>
+                      {issue.reviewedAt && (
+                        <span className="review-date">
+                          Submitted on {formatDateTime(issue.reviewedAt)}
+                        </span>
+                      )}
+                    </div>
+                  )}
                 </div>
               )}
               <div className="issue-actions">
@@ -656,6 +803,235 @@ const AdminPage = () => {
           </>
         )}
 
+        {activeTab === 'general-input' && (
+          <div className="admin-section">
+            <div className="admin-section-header">
+              <MessageSquare size={20} />
+              <h3>General Input</h3>
+            </div>
+            <p className="admin-section-text">
+              Submit unstructured complaint text directly from SMS, WhatsApp, emails, or other sources. 
+              The system will process and extract structured data using AI.
+            </p>
+            <form className="general-input-form" onSubmit={handleGeneralInputSubmit}>
+              <textarea
+                rows={10}
+                placeholder="Paste complaint text here from SMS, WhatsApp, email, etc.&#10;&#10;Example:&#10;Sir, there is a water leakage problem in Sector 12, near the main market. The pipe has been leaking for 3 days now and water is getting wasted. Please fix it urgently. - Rajesh Kumar, 9876543210"
+                value={generalInput}
+                onChange={(e) => setGeneralInput(e.target.value)}
+                className="general-input-textarea"
+                disabled={isProcessing}
+              />
+              <button type="submit" className="secondary-btn" disabled={isProcessing}>
+                {isProcessing ? (
+                  <>
+                    <Clock size={16} />
+                    Processing...
+                  </>
+                ) : (
+                  <>
+                    <Send size={16} />
+                    Process Input
+                  </>
+                )}
+              </button>
+            </form>
+            {generalInputMessage && (
+              <p className="admin-message ok">
+                <CheckCircle size={16} />
+                {generalInputMessage}
+              </p>
+            )}
+            {generalInputError && (
+              <p className="admin-message error">
+                <AlertTriangle size={16} />
+                {generalInputError}
+              </p>
+            )}
+
+            {structuredData && (
+              <div className="structured-data-section">
+                <div className="structured-data-header">
+                  <h4>
+                    <CheckCircle size={20} />
+                    Verify & Submit to Common Channel
+                  </h4>
+                  <p>Review and edit the extracted information before submitting to the common complaints channel (same as chat and quick submit form).</p>
+                </div>
+                <div className="structured-data-form">
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label>Issue Type *</label>
+                      <input
+                        type="text"
+                        value={structuredData.issueType}
+                        onChange={(e) => handleStructuredDataChange('issueType', e.target.value)}
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label>Severity *</label>
+                      <select
+                        value={structuredData.severity}
+                        onChange={(e) => handleStructuredDataChange('severity', e.target.value)}
+                      >
+                        <option value="low">Low</option>
+                        <option value="medium">Medium</option>
+                        <option value="high">High</option>
+                        <option value="critical">Critical</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="form-row">
+                    <div className="form-group full-width">
+                      <label>Location *</label>
+                      <input
+                        type="text"
+                        value={structuredData.location}
+                        onChange={(e) => handleStructuredDataChange('location', e.target.value)}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="form-row">
+                    <div className="form-group full-width">
+                      <label>Landmark</label>
+                      <input
+                        type="text"
+                        value={structuredData.landmark}
+                        onChange={(e) => handleStructuredDataChange('landmark', e.target.value)}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="form-row">
+                    <div className="form-group full-width">
+                      <label>Summary *</label>
+                      <input
+                        type="text"
+                        value={structuredData.summary}
+                        onChange={(e) => handleStructuredDataChange('summary', e.target.value)}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="form-row">
+                    <div className="form-group full-width">
+                      <label>Description *</label>
+                      <textarea
+                        rows={5}
+                        value={structuredData.description}
+                        onChange={(e) => handleStructuredDataChange('description', e.target.value)}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="form-row">
+                    <div className="form-group full-width">
+                      <label>Impact</label>
+                      <textarea
+                        rows={3}
+                        value={structuredData.impact}
+                        onChange={(e) => handleStructuredDataChange('impact', e.target.value)}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label>Recurrence</label>
+                      <select
+                        value={structuredData.recurrence}
+                        onChange={(e) => handleStructuredDataChange('recurrence', e.target.value)}
+                      >
+                        <option value="new">New</option>
+                        <option value="recurring">Recurring</option>
+                        <option value="ongoing">Ongoing</option>
+                      </select>
+                    </div>
+                    <div className="form-group">
+                      <label>Preferred Contact Method</label>
+                      <select
+                        value={structuredData.preferredContactMethod}
+                        onChange={(e) => handleStructuredDataChange('preferredContactMethod', e.target.value)}
+                      >
+                        <option value="none">None</option>
+                        <option value="phone">Phone</option>
+                        <option value="email">Email</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label>Contact Name</label>
+                      <input
+                        type="text"
+                        value={structuredData.contactName}
+                        onChange={(e) => handleStructuredDataChange('contactName', e.target.value)}
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label>Contact Phone</label>
+                      <input
+                        type="text"
+                        value={structuredData.contactPhone}
+                        onChange={(e) => handleStructuredDataChange('contactPhone', e.target.value)}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="form-row">
+                    <div className="form-group full-width">
+                      <label>Contact Email</label>
+                      <input
+                        type="email"
+                        value={structuredData.contactEmail}
+                        onChange={(e) => handleStructuredDataChange('contactEmail', e.target.value)}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="form-actions">
+                    <button 
+                      type="button" 
+                      className="secondary-btn create-complaint-btn"
+                      onClick={handleCreateComplaint}
+                      disabled={isProcessing}
+                    >
+                      {isProcessing ? (
+                        <>
+                          <Clock size={16} />
+                          Submitting...
+                        </>
+                      ) : (
+                        <>
+                          <Send size={16} />
+                          Submit to Common Channel
+                        </>
+                      )}
+                    </button>
+                    <button 
+                      type="button" 
+                      className="ghost-btn"
+                      onClick={() => {
+                        setStructuredData(null);
+                        setGeneralInput('');
+                        setGeneralInputMessage(null);
+                        setGeneralInputError(null);
+                      }}
+                      disabled={isProcessing}
+                    >
+                      <X size={16} />
+                      Cancel & Reset
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
         {activeTab === 'departments' && (
           <div className="admin-section">
           <div className="admin-section-header">
@@ -761,6 +1137,29 @@ const AdminPage = () => {
             <button className="image-modal-close" onClick={() => setSelectedImage(null)}>
               ×
             </button>
+          </div>
+        </div>
+      )}
+
+      {expandedMap && (
+        <div className="map-modal" onClick={() => setExpandedMap(null)}>
+          <div className="map-modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="map-modal-header">
+              <h3>Location Details</h3>
+              <button className="map-modal-close" onClick={() => setExpandedMap(null)}>
+                <X size={24} />
+              </button>
+            </div>
+            <div className="map-modal-body">
+              <LocationPicker
+                value={expandedMap}
+                readOnly
+                showLocateButton={false}
+                label=""
+                helperText=""
+                height={500}
+              />
+            </div>
           </div>
         </div>
       )}

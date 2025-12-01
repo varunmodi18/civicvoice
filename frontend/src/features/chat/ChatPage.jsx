@@ -28,6 +28,7 @@ const ChatPage = () => {
   const [uploadErrors, setUploadErrors] = useState([]);
   const [showToast, setShowToast] = useState(false);
   const [mapLocation, setMapLocation] = useState(() => issueData?.geoLocation || null);
+  const [locationConfirmed, setLocationConfirmed] = useState(false);
   const chatBodyRef = useRef(null);
 
   useEffect(() => {
@@ -226,15 +227,25 @@ const ChatPage = () => {
     setPendingFiles([]);
     setUploadErrors([]);
     setMapLocation(null);
+    setLocationConfirmed(false);
   };
 
   const handleMapLocationChange = useCallback(
     (coords) => {
       setMapLocation(coords);
+      setLocationConfirmed(false); // Reset confirmation when location changes
       dispatch(captureAnswer({ key: 'geoLocation', value: coords }));
     },
     [dispatch]
   );
+
+  const handleConfirmLocation = () => {
+    if (mapLocation?.latitude && mapLocation?.longitude) {
+      setLocationConfirmed(true);
+      const locationText = mapLocation.address || `${mapLocation.latitude.toFixed(6)}, ${mapLocation.longitude.toFixed(6)}`;
+      handleAnswer(locationText);
+    }
+  };
 
   const getChoiceOptions = () => {
     const currentStep = steps[stepIndex];
@@ -262,7 +273,6 @@ const ChatPage = () => {
 
   const choiceOptions = getChoiceOptions();
   const isLocationStep = steps[stepIndex]?.key === 'location';
-  const shouldShowMap = isLocationStep || mapLocation || lastIssue;
 
   return (
     <div className="chat-card glass slide-up">
@@ -284,23 +294,6 @@ const ChatPage = () => {
         )}
       </div>
 
-      {shouldShowMap && (
-        <div className="chat-map-block">
-          <LocationPicker
-            value={mapLocation}
-            onChange={lastIssue ? undefined : handleMapLocationChange}
-            readOnly={Boolean(lastIssue)}
-            helperText={lastIssue ? 'Location shared with the assigned officials.' : 'Search for the spot, drop a pin, or use your current location for faster resolution.'}
-            label="Pin the issue location"
-            height={220}
-            showLocateButton={!lastIssue}
-          />
-          {!lastIssue && (
-            <p className="chat-map-note">Admins and department officials can see any searched addresses, pinned spots, and shared coordinates.</p>
-          )}
-        </div>
-      )}
-
       <div className="chat-body" ref={chatBodyRef}>
         {messages.map((m, idx) => (
           <div
@@ -317,6 +310,35 @@ const ChatPage = () => {
             </div>
           </div>
         ))}
+
+        {/* Show map inline during location step */}
+        {(isLocationStep || (mapLocation && lastIssue)) && (
+          <div className="chat-map-inline">
+            <LocationPicker
+              value={mapLocation}
+              onChange={lastIssue ? undefined : handleMapLocationChange}
+              readOnly={Boolean(lastIssue)}
+              helperText={lastIssue ? 'Location shared with the assigned officials.' : 'Search for the spot, drop a pin, or use your current location for faster resolution.'}
+              label="Pin the issue location"
+              height={280}
+              showLocateButton={!lastIssue}
+            />
+            {!lastIssue && isLocationStep && mapLocation && !locationConfirmed && (
+              <div className="location-confirm-wrapper">
+                <button 
+                  className="location-confirm-btn primary-btn"
+                  onClick={handleConfirmLocation}
+                >
+                  <Send size={16} />
+                  Confirm Location & Continue
+                </button>
+              </div>
+            )}
+            {!lastIssue && (
+              <p className="chat-map-note">Admins and department officials can see any searched addresses, pinned spots, and shared coordinates.</p>
+            )}
+          </div>
+        )}
 
         {/* Show choice buttons when applicable */}
         {choiceOptions && status !== 'loading' && !lastIssue && (
@@ -431,15 +453,19 @@ const ChatPage = () => {
         <form className="chat-input-row" onSubmit={handleSend}>
           <input
             type="text"
-            placeholder="Type your reply here..."
+            placeholder={
+              isLocationStep && !locationConfirmed 
+                ? "Use the map above to mark location, then click 'Confirm Location'" 
+                : "Type your reply here..."
+            }
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            disabled={status === 'loading'}
+            disabled={status === 'loading' || (isLocationStep && !locationConfirmed)}
           />
           <button
             type="submit"
             className="primary-btn"
-            disabled={status === 'loading' || !input.trim()}
+            disabled={status === 'loading' || !input.trim() || (isLocationStep && !locationConfirmed)}
           >
             {status === 'loading' ? (
               <Loader2 size={18} className="spin" />
