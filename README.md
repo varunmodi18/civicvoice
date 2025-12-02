@@ -479,6 +479,93 @@ This project is for educational and demonstration purposes.
 
 ---
 
+## ✅ Current Project Status
+
+### Implemented Features
+
+#### 🏠 Landing Page
+- **Hero Section**: Animated glowing "Shape your city." headline with call-to-action buttons
+- **Live City Feed**: Real-time scrolling feed showing latest reported issues
+- **Alerts Bar**: Scrolling announcement banner with active system alerts from database
+- **Live Stats**: Database-driven statistics (total issues, resolution rate, active departments)
+- **Quick Report Access**: Direct link to issue reporting form
+- **Role-Based Login**: Separate login portals for Citizens, Departments, and Admin
+
+#### 📊 Public Analytics Dashboard (`/dashboard`)
+- **Issue Statistics**: Total issues, pending count, resolution rate, average resolution time
+- **Severity Distribution**: Interactive pie chart showing issue severity breakdown
+- **Department Performance**: Per-department issue counts, resolution rates, and status
+- **Geographic Map**: Interactive Leaflet map with all issue locations, auto-zooming to fit all markers
+- **Recent Activity Timeline**: Chronological list of recent issues with status indicators
+- **Issue Types Overview**: Top reported issue categories
+
+#### 🙋 Citizen Portal
+- **Report Issues**: Submit complaints with title, description, location, severity, and evidence
+- **Location Picker**: Interactive map-based location selector
+- **Evidence Upload**: Support for images (JPG/PNG), documents (PDF), and videos (MP4)
+- **My Issues**: Track all submitted issues with status updates
+- **Quick Report**: Dedicated full-page form for faster issue submission
+
+#### 🔧 Department Portal
+- **Issue Queue**: View all issues assigned to the department
+- **Status Updates**: Change issue status (pending → in-progress → resolved)
+- **Filtering**: Filter issues by status, severity, and date
+- **Issue Details**: Full view of issue with evidence and history
+
+#### 🛡️ Admin Portal
+- **Dashboard Overview**: System-wide statistics and recent activity
+- **User Management**: View and manage citizen and department accounts
+- **Issue Management**: Access to all issues across departments
+- **Department Management**: Add, edit, and configure departments
+- **AI-Powered General Input**: Natural language issue processing using GPT-4o
+  - Automatically extracts: title, category, severity, description
+  - Evidence file attachment support (JPG, PNG, PDF, MP4 - max 50MB each, up to 3 files)
+  - Auto-routes issues to appropriate departments
+- **Alerts System**: Create, edit, and delete system-wide announcements
+
+#### 💬 AI Chat Interface
+- **Conversational Issue Reporting**: Chat with AI assistant to report issues
+- **Natural Language Processing**: AI understands and categorizes complaints
+- **Guided Experience**: Step-by-step assistance for complete issue submission
+
+#### 🔐 Authentication & Security
+- **JWT Authentication**: Secure token-based authentication stored in httpOnly cookies
+- **Role-Based Access**: Three user roles (citizen, department, admin) with appropriate permissions
+- **Password Security**: Bcrypt hashing for all passwords
+- **Protected Routes**: Middleware-based route protection
+
+#### 🗺️ Maps Integration
+- **React-Leaflet**: Interactive maps throughout the application
+- **OpenStreetMap Tiles**: Free, open-source map tiles
+- **Custom Markers**: Location pins for issue positions
+- **Auto-Fit Bounds**: Maps automatically zoom to show all relevant markers
+
+### API Endpoints
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/auth/login` | POST | User authentication |
+| `/api/auth/logout` | POST | Clear auth cookie |
+| `/api/auth/me` | GET | Get current user |
+| `/api/issues` | GET/POST | List/create issues |
+| `/api/issues/:id` | GET/PUT/DELETE | Issue CRUD |
+| `/api/issues/dashboard-stats` | GET | Analytics data |
+| `/api/alerts` | GET/POST | List/create alerts |
+| `/api/alerts/:id` | PUT/DELETE | Alert CRUD |
+| `/api/admin/general-input` | POST | AI text processing |
+| `/api/uploads` | POST | File uploads |
+
+### Database Collections
+
+| Collection | Description |
+|------------|-------------|
+| `users` | Citizens, departments, and admin accounts |
+| `issues` | All reported complaints with status tracking |
+| `departments` | Government department configurations |
+| `alerts` | System-wide announcements |
+
+---
+
 ## 👥 Contributors
 
 - Varun Modi (@varunmodi18)
