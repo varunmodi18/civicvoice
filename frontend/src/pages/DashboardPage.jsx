@@ -144,11 +144,9 @@ const DashboardPage = () => {
 
   return (
     <div className="dashboard-page">
-      <button className="back-btn" onClick={() => navigate('/')}>
-        <div className="back-btn-icon">
-          <ArrowLeft size={20} />
-        </div>
-        <span className="back-btn-text">Back to Home</span>
+      <button className="dashboard-back-btn" onClick={() => navigate('/')}>
+        <ArrowLeft size={20} />
+        <span>Back to Home</span>
       </button>
       
       <div className="dashboard-header">

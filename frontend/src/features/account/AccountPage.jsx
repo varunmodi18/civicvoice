@@ -31,7 +31,7 @@ const AccountPage = () => {
     <div className="account-page">
       <div className="account-card glass scale-in">
         <div className="account-header slide-in-left stagger-1">
-          <button type="button" className="back-btn" onClick={handleBack}>
+          <button type="button" className="account-back-btn" onClick={handleBack}>
             <ArrowLeft size={20} />
             Back to Dashboard
           </button>

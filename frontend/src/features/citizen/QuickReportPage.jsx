@@ -20,7 +20,7 @@ const QuickReportPage = () => {
   return (
     <div className="citizen-home">
       <div className="quick-report-container">
-        <button className="back-btn" onClick={handleBack}>
+        <button className="quick-report-back-btn" onClick={handleBack}>
           <ArrowLeft size={16} />
           Back to Home
         </button>
