@@ -32,6 +32,13 @@ import {
   Phone,
   Mail,
   Star,
+  Bell,
+  Plus,
+  Edit2,
+  Save,
+  Paperclip,
+  Film,
+  FileUp,
 } from 'lucide-react';
 import api from '@/lib/apiClient';
 import '@/styles/AdminPage.css';
@@ -73,12 +80,105 @@ const AdminPage = () => {
   const [generalInputError, setGeneralInputError] = useState(null);
   const [structuredData, setStructuredData] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [alerts, setAlerts] = useState([]);
+  const [alertsLoading, setAlertsLoading] = useState(false);
+  const [showAlertForm, setShowAlertForm] = useState(false);
+  const [editingAlert, setEditingAlert] = useState(null);
+  const [alertForm, setAlertForm] = useState({
+    title: '',
+    message: '',
+    type: 'info',
+    endDate: '',
+  });
+  const [alertMessage, setAlertMessage] = useState(null);
+  const [alertError, setAlertError] = useState(null);
+  const [pendingEvidenceFiles, setPendingEvidenceFiles] = useState([]);
+  const [showEvidenceModal, setShowEvidenceModal] = useState(false);
+  const [evidenceUploadErrors, setEvidenceUploadErrors] = useState([]);
 
   useEffect(() => {
     dispatch(fetchIssues());
     dispatch(fetchDepartments());
     dispatch(fetchDepartmentUsers());
-  }, [dispatch]);
+    if (activeTab === 'alerts') {
+      fetchAlerts();
+    }
+  }, [dispatch, activeTab]);
+
+  const fetchAlerts = async () => {
+    setAlertsLoading(true);
+    try {
+      const response = await api.get('/alerts');
+      setAlerts(response.data);
+    } catch (err) {
+      console.error('Failed to fetch alerts:', err);
+    } finally {
+      setAlertsLoading(false);
+    }
+  };
+
+  const handleAlertFormChange = (field, value) => {
+    setAlertForm((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleCreateAlert = async (e) => {
+    e.preventDefault();
+    setAlertMessage(null);
+    setAlertError(null);
+
+    if (!alertForm.title || !alertForm.message) {
+      setAlertError('Title and message are required');
+      return;
+    }
+
+    try {
+      if (editingAlert) {
+        await api.patch(`/alerts/${editingAlert._id}`, alertForm);
+        setAlertMessage('Alert updated successfully');
+      } else {
+        await api.post('/alerts', alertForm);
+        setAlertMessage('Alert created successfully');
+      }
+      setAlertForm({ title: '', message: '', type: 'info', endDate: '' });
+      setShowAlertForm(false);
+      setEditingAlert(null);
+      fetchAlerts();
+    } catch (err) {
+      setAlertError(err.message || 'Failed to save alert');
+    }
+  };
+
+  const handleEditAlert = (alert) => {
+    setEditingAlert(alert);
+    setAlertForm({
+      title: alert.title,
+      message: alert.message,
+      type: alert.type,
+      endDate: alert.endDate ? new Date(alert.endDate).toISOString().split('T')[0] : '',
+    });
+    setShowAlertForm(true);
+  };
+
+  const handleToggleAlertStatus = async (alertId, currentStatus) => {
+    try {
+      await api.patch(`/alerts/${alertId}`, { isActive: !currentStatus });
+      fetchAlerts();
+    } catch (err) {
+      setAlertError(err.message || 'Failed to update alert status');
+    }
+  };
+
+  const handleDeleteAlert = async (alertId) => {
+    if (window.confirm('Are you sure you want to delete this alert?')) {
+      try {
+        await api.delete(`/alerts/${alertId}`);
+        setAlertMessage('Alert deleted successfully');
+        fetchAlerts();
+      } catch (err) {
+        setAlertError(err.message || 'Failed to delete alert');
+      }
+    }
+  };
 
   const handleForward = (issueId, deptId) => {
     if (!deptId) return;
@@ -170,7 +270,24 @@ const AdminPage = () => {
     setIsProcessing(true);
 
     try {
-      await api.post('/admin/create-complaint', structuredData);
+      let evidenceUrls = [];
+      
+      // Upload files if there are any
+      if (pendingEvidenceFiles.length > 0) {
+        const formData = new FormData();
+        pendingEvidenceFiles.forEach(file => {
+          formData.append('files', file);
+        });
+        
+        const uploadRes = await api.post('/uploads/multiple', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        });
+        
+        evidenceUrls = uploadRes.data.files.map(f => f.url);
+      }
+      
+      const payload = { ...structuredData, evidenceUrls };
+      await api.post('/admin/create-complaint', payload);
 
       setGeneralInputMessage('Complaint submitted successfully to the common channel!');
       
@@ -180,6 +297,8 @@ const AdminPage = () => {
         setStructuredData(null);
         setGeneralInputMessage(null);
         setGeneralInputError(null);
+        setPendingEvidenceFiles([]);
+        setEvidenceUploadErrors([]);
       }, 2000);
       
       // Refresh issues list to show the newly created complaint
@@ -193,6 +312,59 @@ const AdminPage = () => {
 
   const handleStructuredDataChange = (field, value) => {
     setStructuredData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleEvidenceFileSelect = (e) => {
+    const files = Array.from(e.target.files);
+    const errors = [];
+    
+    const validFiles = files.filter((file) => {
+      // Check file type
+      const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf', 'video/mp4'];
+      if (!allowedTypes.includes(file.type)) {
+        errors.push(`${file.name}: Invalid file type. Only JPG, PNG, PDF, and MP4 are allowed.`);
+        return false;
+      }
+      // Check file size (50MB max)
+      if (file.size > 50 * 1024 * 1024) {
+        errors.push(`${file.name}: File too large. Maximum 50MB per file.`);
+        return false;
+      }
+      return true;
+    });
+
+    setEvidenceUploadErrors(errors);
+
+    // Limit to 3 files total
+    const totalFiles = pendingEvidenceFiles.length + validFiles.length;
+    if (totalFiles > 3) {
+      const allowedNewFiles = 3 - pendingEvidenceFiles.length;
+      setEvidenceUploadErrors([...errors, `You can only upload 3 files. Adding first ${allowedNewFiles} file(s).`]);
+      setPendingEvidenceFiles([...pendingEvidenceFiles, ...validFiles.slice(0, allowedNewFiles)]);
+    } else {
+      setPendingEvidenceFiles([...pendingEvidenceFiles, ...validFiles]);
+    }
+
+    if (errors.length === 0 && validFiles.length > 0) {
+      setShowEvidenceModal(false);
+    }
+  };
+
+  const removeEvidenceFile = (index) => {
+    setPendingEvidenceFiles((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const getFileIcon = (file) => {
+    if (file.type.startsWith('image/')) return <ImageIcon size={20} />;
+    if (file.type === 'video/mp4') return <Film size={20} />;
+    if (file.type === 'application/pdf') return <FileText size={20} />;
+    return <FileUp size={20} />;
+  };
+
+  const formatFileSize = (bytes) => {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
   };
 
   const handleDeleteIssue = async (issueId) => {
@@ -355,6 +527,13 @@ const AdminPage = () => {
           >
             <MessageSquare size={18} />
             General Input
+          </button>
+          <button 
+            className={`admin-tab ${activeTab === 'alerts' ? 'active' : ''}`}
+            onClick={() => setActiveTab('alerts')}
+          >
+            <Bell size={18} />
+            Alerts & Notices
           </button>
           <button 
             className={`admin-tab ${activeTab === 'departments' ? 'active' : ''}`}
@@ -822,19 +1001,54 @@ const AdminPage = () => {
                 className="general-input-textarea"
                 disabled={isProcessing}
               />
-              <button type="submit" className="secondary-btn" disabled={isProcessing}>
-                {isProcessing ? (
-                  <>
-                    <Clock size={16} />
-                    Processing...
-                  </>
-                ) : (
-                  <>
-                    <Send size={16} />
-                    Process Input
-                  </>
-                )}
-              </button>
+              <div className="form-actions-row">
+                <button 
+                  type="button" 
+                  className="ghost-btn evidence-btn"
+                  onClick={() => setShowEvidenceModal(true)}
+                  disabled={isProcessing}
+                >
+                  <Paperclip size={16} />
+                  Attach Evidence
+                  {pendingEvidenceFiles.length > 0 && (
+                    <span className="badge">{pendingEvidenceFiles.length}</span>
+                  )}
+                </button>
+                <button type="submit" className="secondary-btn" disabled={isProcessing}>
+                  {isProcessing ? (
+                    <>
+                      <Clock size={16} />
+                      Processing...
+                    </>
+                  ) : (
+                    <>
+                      <Send size={16} />
+                      Process Input
+                    </>
+                  )}
+                </button>
+              </div>
+              
+              {pendingEvidenceFiles.length > 0 && (
+                <div className="attached-files-preview">
+                  <h4>Attached Files ({pendingEvidenceFiles.length}/3)</h4>
+                  <div className="files-preview-list">
+                    {pendingEvidenceFiles.map((file, index) => (
+                      <div key={index} className="file-preview-item">
+                        {getFileIcon(file)}
+                        <span className="file-preview-name">{file.name}</span>
+                        <button 
+                          type="button"
+                          className="remove-file-btn" 
+                          onClick={() => removeEvidenceFile(index)}
+                        >
+                          <X size={14} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </form>
             {generalInputMessage && (
               <p className="admin-message ok">
@@ -1128,7 +1342,254 @@ const AdminPage = () => {
           </div>
         </div>
         )}
+
+        {activeTab === 'alerts' && (
+          <div className="admin-section">
+            <div className="admin-section-header">
+              <Bell size={20} />
+              <h3>Alerts & Notices</h3>
+            </div>
+            <p className="admin-section-text">
+              Create and manage system-wide alerts that appear on the landing page. Use this to notify citizens about important updates, maintenance, or urgent issues.
+            </p>
+
+            {!showAlertForm ? (
+              <button 
+                className="secondary-btn"
+                onClick={() => {
+                  setShowAlertForm(true);
+                  setEditingAlert(null);
+                  setAlertForm({ title: '', message: '', type: 'info', endDate: '' });
+                  setAlertMessage(null);
+                  setAlertError(null);
+                }}
+              >
+                <Plus size={16} />
+                Create New Alert
+              </button>
+            ) : (
+              <form className="alert-form" onSubmit={handleCreateAlert}>
+                <div className="form-row">
+                  <div className="form-group full-width">
+                    <label>Alert Title *</label>
+                    <input
+                      type="text"
+                      placeholder="e.g., System Maintenance Scheduled"
+                      value={alertForm.title}
+                      onChange={(e) => handleAlertFormChange('title', e.target.value)}
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="form-row">
+                  <div className="form-group full-width">
+                    <label>Message *</label>
+                    <textarea
+                      rows={4}
+                      placeholder="Detailed message about the alert..."
+                      value={alertForm.message}
+                      onChange={(e) => handleAlertFormChange('message', e.target.value)}
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="form-row">
+                  <div className="form-group">
+                    <label>Alert Type</label>
+                    <select
+                      value={alertForm.type}
+                      onChange={(e) => handleAlertFormChange('type', e.target.value)}
+                    >
+                      <option value="info">Info</option>
+                      <option value="warning">Warning</option>
+                      <option value="urgent">Urgent</option>
+                    </select>
+                  </div>
+                  <div className="form-group">
+                    <label>End Date (Optional)</label>
+                    <input
+                      type="date"
+                      value={alertForm.endDate}
+                      onChange={(e) => handleAlertFormChange('endDate', e.target.value)}
+                    />
+                  </div>
+                </div>
+
+                <div className="form-actions">
+                  <button type="submit" className="secondary-btn">
+                    <Save size={16} />
+                    {editingAlert ? 'Update Alert' : 'Create Alert'}
+                  </button>
+                  <button 
+                    type="button" 
+                    className="ghost-btn"
+                    onClick={() => {
+                      setShowAlertForm(false);
+                      setEditingAlert(null);
+                      setAlertForm({ title: '', message: '', type: 'info', endDate: '' });
+                    }}
+                  >
+                    <X size={16} />
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            )}
+
+            {alertMessage && (
+              <p className="admin-message ok">
+                <CheckCircle size={16} />
+                {alertMessage}
+              </p>
+            )}
+            {alertError && (
+              <p className="admin-message error">
+                <AlertTriangle size={16} />
+                {alertError}
+              </p>
+            )}
+
+            {alertsLoading ? (
+              <p className="loading-text">Loading alerts...</p>
+            ) : (
+              <div className="alerts-list">
+                {alerts.length === 0 && (
+                  <p className="no-issues">
+                    <Bell size={20} />
+                    No alerts created yet.
+                  </p>
+                )}
+                {alerts.map((alert) => (
+                  <div key={alert._id} className={`alert-card hover-float alert-type-${alert.type}`}>
+                    <div className="alert-card-header">
+                      <div>
+                        <h4>{alert.title}</h4>
+                        <span className={`alert-badge alert-badge-${alert.type}`}>
+                          {alert.type}
+                        </span>
+                        {alert.isActive ? (
+                          <span className="alert-status-badge active">Active</span>
+                        ) : (
+                          <span className="alert-status-badge inactive">Inactive</span>
+                        )}
+                      </div>
+                    </div>
+                    <p className="alert-message">{alert.message}</p>
+                    <div className="alert-meta">
+                      <span>Created: {formatDateTime(alert.createdAt)}</span>
+                      {alert.endDate && (
+                        <span>Expires: {formatDateTime(alert.endDate)}</span>
+                      )}
+                    </div>
+                    <div className="alert-actions">
+                      <button
+                        className="ghost-btn"
+                        onClick={() => handleEditAlert(alert)}
+                      >
+                        <Edit2 size={14} />
+                        Edit
+                      </button>
+                      <button
+                        className="ghost-btn"
+                        onClick={() => handleToggleAlertStatus(alert._id, alert.isActive)}
+                      >
+                        {alert.isActive ? 'Deactivate' : 'Activate'}
+                      </button>
+                      <button
+                        className="ghost-btn delete-issue-btn"
+                        onClick={() => handleDeleteAlert(alert._id)}
+                      >
+                        <Trash2 size={14} />
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
       </div>
+
+      {/* Evidence Upload Modal */}
+      {showEvidenceModal && (
+        <div className="modal-overlay fade-in" onClick={() => setShowEvidenceModal(false)}>
+          <div className="modal-content evidence-modal scale-in" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>Attach Evidence</h3>
+              <button className="modal-close" onClick={() => setShowEvidenceModal(false)}>
+                <X size={20} />
+              </button>
+            </div>
+            <div className="modal-body">
+              <p className="modal-info">
+                Upload up to 3 files (JPG, PNG, PDF, or MP4). Max 50MB per file.
+              </p>
+              
+              {evidenceUploadErrors.length > 0 && (
+                <div className="upload-errors">
+                  {evidenceUploadErrors.map((error, i) => (
+                    <p key={i} className="error-text">{error}</p>
+                  ))}
+                </div>
+              )}
+
+              <div className="file-upload-area">
+                <label className={`file-upload-label ${pendingEvidenceFiles.length >= 3 ? 'disabled' : ''}`}>
+                  <FileUp size={32} />
+                  <span>
+                    {pendingEvidenceFiles.length >= 3 
+                      ? 'Maximum 3 files reached. Remove files to add new ones.' 
+                      : 'Click to select files'}
+                  </span>
+                  <input
+                    type="file"
+                    multiple
+                    accept=".jpg,.jpeg,.png,.pdf,.mp4"
+                    onChange={handleEvidenceFileSelect}
+                    disabled={pendingEvidenceFiles.length >= 3}
+                  />
+                </label>
+              </div>
+
+              {pendingEvidenceFiles.length > 0 && (
+                <div className="selected-files-list">
+                  <h4>Attached Files ({pendingEvidenceFiles.length}/3)</h4>
+                  <p className="upload-info">Files will be uploaded when you submit the complaint</p>
+                  {pendingEvidenceFiles.map((file, index) => (
+                    <div key={index} className="file-item">
+                      <div className="file-info">
+                        {getFileIcon(file)}
+                        <div>
+                          <p className="file-name">{file.name}</p>
+                          <p className="file-size">{formatFileSize(file.size)}</p>
+                        </div>
+                      </div>
+                      <button 
+                        type="button"
+                        className="remove-file-btn" 
+                        onClick={() => removeEvidenceFile(index)}
+                      >
+                        <X size={16} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+            <div className="modal-footer">
+              <button 
+                className="primary-btn" 
+                onClick={() => setShowEvidenceModal(false)}
+              >
+                Done
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {selectedImage && (
         <div className="image-modal" onClick={() => setSelectedImage(null)}>

@@ -377,6 +377,155 @@ const rateIssue = async (req, res) => {
   return res.json(populated);
 };
 
+const getStats = async (req, res) => {
+  try {
+    // Count total issues resolved (completed status)
+    const resolvedCount = await Issue.countDocuments({ status: 'completed' });
+
+    // Count unique citizens (distinct createdBy users)
+    const citizenCount = await Issue.distinct('createdBy').then(ids => ids.length);
+
+    // Count total departments
+    const departmentCount = await Department.countDocuments();
+
+    return res.json({
+      resolvedIssues: resolvedCount,
+      activeCitizens: citizenCount,
+      departments: departmentCount,
+    });
+  } catch (err) {
+    console.error('Error fetching stats:', err);
+    return res.status(500).json({ message: 'Failed to fetch statistics' });
+  }
+};
+
+const getRecentIssues = async (req, res) => {
+  try {
+    const limit = parseInt(req.query.limit) || 5;
+    
+    const recentIssues = await Issue.find()
+      .sort({ createdAt: -1 })
+      .limit(limit)
+      .select('issueType location severity status createdAt')
+      .lean();
+
+    return res.json(recentIssues);
+  } catch (err) {
+    console.error('Error fetching recent issues:', err);
+    return res.status(500).json({ message: 'Failed to fetch recent issues' });
+  }
+};
+
+const getDashboardStats = async (req, res) => {
+  try {
+    // Total issues
+    const totalIssues = await Issue.countDocuments();
+
+    // Status breakdown
+    const statusStats = await Issue.aggregate([
+      { $group: { _id: '$status', count: { $sum: 1 } } }
+    ]);
+
+    // Severity breakdown
+    const severityStats = await Issue.aggregate([
+      { $group: { _id: '$severity', count: { $sum: 1 } } }
+    ]);
+
+    // Issue type breakdown (top 10)
+    const issueTypeStats = await Issue.aggregate([
+      { $group: { _id: '$issueType', count: { $sum: 1 } } },
+      { $sort: { count: -1 } },
+      { $limit: 10 }
+    ]);
+
+    // Department breakdown
+    const departmentStats = await Issue.aggregate([
+      { $match: { forwardedTo: { $ne: null } } },
+      {
+        $lookup: {
+          from: 'departments',
+          localField: 'forwardedTo',
+          foreignField: '_id',
+          as: 'department'
+        }
+      },
+      { $unwind: '$department' },
+      { $group: { _id: '$department.name', count: { $sum: 1 } } },
+      { $sort: { count: -1 } }
+    ]);
+
+    // Issues with geo locations
+    const issuesWithLocations = await Issue.find({
+      'geoLocation.latitude': { $exists: true, $ne: null },
+      'geoLocation.longitude': { $exists: true, $ne: null }
+    })
+      .select('issueType location severity status geoLocation')
+      .lean();
+
+    // Average resolution time (for completed issues)
+    const completedIssues = await Issue.find({ status: 'completed' })
+      .select('createdAt updatedAt')
+      .lean();
+
+    let avgResolutionDays = 0;
+    if (completedIssues.length > 0) {
+      const totalDays = completedIssues.reduce((sum, issue) => {
+        const days = (new Date(issue.updatedAt) - new Date(issue.createdAt)) / (1000 * 60 * 60 * 24);
+        return sum + days;
+      }, 0);
+      avgResolutionDays = Math.round(totalDays / completedIssues.length);
+    }
+
+    // Issues created over time (last 30 days)
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    const issuesOverTime = await Issue.aggregate([
+      { $match: { createdAt: { $gte: thirtyDaysAgo } } },
+      {
+        $group: {
+          _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
+          count: { $sum: 1 }
+        }
+      },
+      { $sort: { _id: 1 } }
+    ]);
+
+    // Recurrence stats
+    const recurrenceStats = await Issue.aggregate([
+      { $group: { _id: '$recurrence', count: { $sum: 1 } } }
+    ]);
+
+    // Average rating
+    const ratingStats = await Issue.aggregate([
+      { $match: { rating: { $exists: true, $ne: null } } },
+      {
+        $group: {
+          _id: null,
+          avgRating: { $avg: '$rating' },
+          totalRatings: { $sum: 1 }
+        }
+      }
+    ]);
+
+    return res.json({
+      totalIssues,
+      statusStats,
+      severityStats,
+      issueTypeStats,
+      departmentStats,
+      issuesWithLocations,
+      avgResolutionDays,
+      issuesOverTime,
+      recurrenceStats,
+      ratingStats: ratingStats[0] || { avgRating: 0, totalRatings: 0 }
+    });
+  } catch (err) {
+    console.error('Error fetching dashboard stats:', err);
+    return res.status(500).json({ message: 'Failed to fetch dashboard statistics' });
+  }
+};
+
 module.exports = {
   createIssue,
   getIssuesForAdmin,
@@ -387,4 +536,7 @@ module.exports = {
   reopenIssue,
   deleteIssue,
   rateIssue,
+  getStats,
+  getRecentIssues,
+  getDashboardStats,
 };

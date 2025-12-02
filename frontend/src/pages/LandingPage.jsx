@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   MessageSquare, 
@@ -10,12 +10,109 @@ import {
   ArrowRight,
   Shield,
   Zap,
-  Heart
+  Heart,
+  AlertCircle,
+  Activity,
+  AlertTriangle,
+  Info,
+  X
 } from 'lucide-react';
+import api from '@/lib/apiClient';
 import '@/styles/LandingPage.css';
 
 const LandingPage = () => {
   const navigate = useNavigate();
+  const [stats, setStats] = useState({
+    activeCitizens: 0,
+    resolvedIssues: 0,
+    departments: 0,
+  });
+  const [loading, setLoading] = useState(true);
+  const [recentIssues, setRecentIssues] = useState([]);
+  const [feedLoading, setFeedLoading] = useState(true);
+  const [alerts, setAlerts] = useState([]);
+  const [closedAlerts, setClosedAlerts] = useState([]);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const response = await api.get('/issues/stats');
+        setStats(response.data);
+      } catch (err) {
+        console.error('Failed to fetch stats:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    const fetchRecentIssues = async () => {
+      try {
+        const response = await api.get('/issues/recent?limit=5');
+        setRecentIssues(response.data);
+      } catch (err) {
+        console.error('Failed to fetch recent issues:', err);
+      } finally {
+        setFeedLoading(false);
+      }
+    };
+
+    const fetchActiveAlerts = async () => {
+      try {
+        const response = await api.get('/alerts/active');
+        console.log('Fetched alerts:', response.data);
+        setAlerts(response.data);
+      } catch (err) {
+        console.error('Failed to fetch alerts:', err);
+      }
+    };
+
+    fetchStats();
+    fetchRecentIssues();
+    fetchActiveAlerts();
+    
+    // Refresh recent issues every 30 seconds
+    const interval = setInterval(fetchRecentIssues, 30000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const handleCloseAlert = (alertId) => {
+    setClosedAlerts((prev) => [...prev, alertId]);
+  };
+
+  const getAlertIcon = (type) => {
+    switch (type) {
+      case 'urgent':
+        return <AlertTriangle size={18} />;
+      case 'warning':
+        return <AlertCircle size={18} />;
+      default:
+        return <Info size={18} />;
+    }
+  };
+
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'completed':
+        return '#10b981';
+      case 'in_review':
+        return '#f59e0b';
+      case 'pending':
+        return '#ef4444';
+      default:
+        return '#6b7280';
+    }
+  };
+
+  const formatTimeAgo = (dateString) => {
+    const now = new Date();
+    const then = new Date(dateString);
+    const seconds = Math.floor((now - then) / 1000);
+    
+    if (seconds < 60) return 'Just now';
+    if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
+    if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
+    return `${Math.floor(seconds / 86400)}d ago`;
+  };
 
   const features = [
     {
@@ -40,10 +137,10 @@ const LandingPage = () => {
     }
   ];
 
-  const stats = [
-    { icon: <Users size={24} />, value: '1000+', label: 'Active Citizens' },
-    { icon: <MessageSquare size={24} />, value: '5000+', label: 'Issues Resolved' },
-    { icon: <Building2 size={24} />, value: '50+', label: 'Departments' },
+  const statsDisplay = [
+    { icon: <Users size={24} />, value: loading ? '...' : `${stats.activeCitizens}+`, label: 'Active Citizens' },
+    { icon: <MessageSquare size={24} />, value: loading ? '...' : `${stats.resolvedIssues}+`, label: 'Issues Resolved' },
+    { icon: <Building2 size={24} />, value: loading ? '...' : `${stats.departments}+`, label: 'Departments' },
     { icon: <Clock size={24} />, value: '24/7', label: 'Support' }
   ];
 
@@ -67,16 +164,46 @@ const LandingPage = () => {
 
   return (
     <div className="landing-page">
+      {/* Alerts Bar */}
+      {alerts.length > 0 && console.log('Rendering alerts:', alerts)}
+      {alerts.filter(alert => !closedAlerts.includes(alert._id)).length > 0 && (
+        <div className="alerts-bar">
+          {alerts
+            .filter(alert => !closedAlerts.includes(alert._id))
+            .map((alert) => (
+              <div key={alert._id} className={`alert-banner alert-banner-${alert.type}`}>
+                <div className="alert-banner-content">
+                  <div className="alert-banner-icon">
+                    {getAlertIcon(alert.type)}
+                  </div>
+                  <div className="alert-banner-text">
+                    <strong>{alert.title}</strong>
+                    <span>{alert.message}</span>
+                  </div>
+                </div>
+                <button 
+                  className="alert-banner-close"
+                  onClick={() => handleCloseAlert(alert._id)}
+                  aria-label="Close alert"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+            ))}
+        </div>
+      )}
+
       {/* Hero Section */}
       <section className="hero-section">
         <div className="hero-content">
           <div className="hero-text">
             <h1 className="hero-title slide-up">
-              Your Voice for a Better City
+              Raise issues.<br />
+              Track resolutions.<br />
+              <span className="hero-highlight">Shape your city.</span>
             </h1>
             <p className="hero-subtitle fade-in">
-              Report civic issues, track resolutions, and make your community better with CivicVoice - 
-              the smart platform connecting citizens with local departments.
+              The central hub for CityWorks citizens. Report potholes, sanitation issues, or streetlights in seconds and get real-time updates on your phone.
             </p>
             <div className="hero-buttons fade-in">
               <button 
@@ -95,17 +222,53 @@ const LandingPage = () => {
             </div>
           </div>
           <div className="hero-visual">
-            <div className="floating-card card-1 hover-float scale-in stagger-2">
-              <MapPin size={24} />
-              <span>Report Issue</span>
-            </div>
-            <div className="floating-card card-2 hover-float scale-in stagger-3">
-              <Clock size={24} />
-              <span>Track Progress</span>
-            </div>
-            <div className="floating-card card-3 hover-float scale-in stagger-4">
-              <CheckCircle size={24} />
-              <span>Issue Resolved</span>
+            <div className="live-feed glass fade-scale">
+              <div className="live-feed-header">
+                <div className="live-indicator">
+                  <Activity size={16} className="pulse" />
+                  <span>Live City Feed</span>
+                </div>
+                <span className="feed-subtitle">Recent issues from your community</span>
+              </div>
+              <div className="live-feed-content">
+                {feedLoading ? (
+                  <div className="feed-loading">
+                    <Clock size={20} />
+                    <span>Loading recent issues...</span>
+                  </div>
+                ) : recentIssues.length === 0 ? (
+                  <div className="feed-empty">
+                    <AlertCircle size={20} />
+                    <span>No issues reported yet</span>
+                  </div>
+                ) : (
+                  <div className="feed-items">
+                    {recentIssues.map((issue) => (
+                      <div key={issue._id} className="feed-item hover-float">
+                        <div className="feed-item-icon">
+                          <MapPin size={14} />
+                        </div>
+                        <div className="feed-item-content">
+                          <div className="feed-item-title">{issue.issueType}</div>
+                          <div className="feed-item-location">
+                            <MapPin size={10} />
+                            {issue.location}
+                          </div>
+                        </div>
+                        <div className="feed-item-meta">
+                          <span 
+                            className="feed-item-status" 
+                            style={{ backgroundColor: getStatusColor(issue.status) }}
+                          >
+                            {issue.status === 'in_review' ? 'reviewing' : issue.status}
+                          </span>
+                          <span className="feed-item-time">{formatTimeAgo(issue.createdAt)}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
@@ -114,13 +277,22 @@ const LandingPage = () => {
       {/* Stats Section */}
       <section className="stats-section">
         <div className="stats-container">
-          {stats.map((stat, idx) => (
+          {statsDisplay.map((stat, idx) => (
             <div key={idx} className={`stat-card glass hover-float scale-in stagger-${idx + 1}`}>
               <div className="stat-icon">{stat.icon}</div>
               <div className="stat-value">{stat.value}</div>
               <div className="stat-label">{stat.label}</div>
             </div>
           ))}
+        </div>
+        <div className="stats-cta">
+          <button 
+            className="dashboard-btn glass"
+            onClick={() => navigate('/dashboard')}
+          >
+            View Full Dashboard
+            <ArrowRight size={18} />
+          </button>
         </div>
       </section>
 

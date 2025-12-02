@@ -10,10 +10,18 @@ const {
   reopenIssue,
   deleteIssue,
   rateIssue,
+  getStats,
+  getRecentIssues,
+  getDashboardStats,
 } = require('../controllers/issueController');
 const { protect, adminOnly, departmentOnly } = require('../middleware/authMiddleware');
 
 const router = express.Router();
+
+// Public routes
+router.get('/stats', getStats);
+router.get('/recent', getRecentIssues);
+router.get('/dashboard-stats', getDashboardStats);
 
 router.post('/', protect, createIssue);
 

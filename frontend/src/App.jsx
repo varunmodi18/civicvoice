@@ -3,6 +3,7 @@ import React, { useEffect } from 'react';
 import { Routes, Route, Link, useNavigate, useLocation } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import LandingPage from '@/pages/LandingPage';
+import DashboardPage from '@/pages/DashboardPage';
 import CitizenLoginPage from '@/features/auth/CitizenLoginPage';
 import AdminLoginPage from '@/features/auth/LoginPage';
 import DepartmentLoginPage from '@/features/auth/DepartmentLoginPage';
@@ -18,6 +19,7 @@ const AppShell = ({ children }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const isLandingPage = location.pathname === '/';
+  const isDashboardPage = location.pathname === '/dashboard';
 
   const handleLogoClick = () => {
     if (user?.role === 'citizen') navigate('/citizen');
@@ -26,8 +28,8 @@ const AppShell = ({ children }) => {
     else navigate('/');
   };
 
-  // Don't show header/footer on landing page
-  if (isLandingPage) {
+  // Don't show header/footer on landing page or dashboard page
+  if (isLandingPage || isDashboardPage) {
     return <div className="app-root">{children}</div>;
   }
 
@@ -78,6 +80,9 @@ const AppShell = ({ children }) => {
 
 const App = () => {
   const dispatch = useDispatch();
+  const location = useLocation();
+  const isLandingPage = location.pathname === '/';
+  const isDashboardPage = location.pathname === '/dashboard';
 
   useEffect(() => {
     dispatch(fetchMe());
@@ -87,6 +92,7 @@ const App = () => {
     <AppShell>
       <Routes>
         <Route path="/" element={<LandingPage />} />
+        <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/login" element={<AdminLoginPage />} />
         <Route path="/login/citizen" element={<CitizenLoginPage />} />
         <Route path="/login/admin" element={<AdminLoginPage />} />
