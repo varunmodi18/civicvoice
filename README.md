@@ -214,32 +214,93 @@ The frontend will start at `http://localhost:5173`
 civicvoice/
 ├── backend/
 │   ├── src/
-│   │   ├── config/          # Database configuration
-│   │   ├── controllers/     # Route handlers
-│   │   ├── middleware/      # Auth, CORS, error handling
-│   │   ├── models/          # MongoDB schemas
-│   │   ├── routes/          # API routes
-│   │   ├── seed/            # Database seeding
-│   │   ├── app.js           # Express app setup
-│   │   └── server.js        # Server entry point
-│   ├── uploads/             # File uploads storage
-│   ├── .env                 # Environment variables
+│   │   ├── config/
+│   │   │   └── db.js                 # MongoDB connection setup
+│   │   ├── controllers/
+│   │   │   ├── adminController.js    # Admin operations & AI processing
+│   │   │   ├── alertController.js    # System alerts CRUD
+│   │   │   ├── authController.js     # Login, logout, user management
+│   │   │   └── issueController.js    # Issues CRUD & dashboard stats
+│   │   ├── middleware/
+│   │   │   ├── authMiddleware.js     # JWT token verification
+│   │   │   ├── corsMiddleware.js     # CORS configuration
+│   │   │   └── errorMiddleware.js    # Global error handling
+│   │   ├── models/
+│   │   │   ├── Alert.js              # System alerts schema
+│   │   │   ├── Department.js         # Department schema
+│   │   │   ├── Issue.js              # Complaint/issue schema
+│   │   │   └── User.js               # User schema (citizen/admin/dept)
+│   │   ├── routes/
+│   │   │   ├── adminRoutes.js        # /api/admin endpoints
+│   │   │   ├── alertRoutes.js        # /api/alerts endpoints
+│   │   │   ├── authRoutes.js         # /api/auth endpoints
+│   │   │   ├── issueRoutes.js        # /api/issues endpoints
+│   │   │   └── uploadRoutes.js       # /api/uploads endpoints
+│   │   ├── seed/
+│   │   │   └── seed.js               # Database seeding script
+│   │   ├── app.js                    # Express app configuration
+│   │   └── server.js                 # Server entry point
+│   ├── uploads/                      # Uploaded evidence files
+│   ├── .env                          # Environment variables
+│   ├── .env.example                  # Environment template
 │   └── package.json
 │
 ├── frontend/
 │   ├── src/
-│   │   ├── components/      # Reusable UI components
-│   │   ├── features/        # Feature modules (auth, admin, etc.)
-│   │   ├── lib/             # API client, utilities
-│   │   ├── pages/           # Page components
-│   │   ├── styles/          # CSS files
-│   │   ├── App.jsx          # Main app component
-│   │   ├── main.jsx         # Entry point
-│   │   └── store.js         # Redux store
+│   │   ├── components/
+│   │   │   ├── LocationPicker.jsx    # Map-based location selector
+│   │   │   ├── LocationPicker.css
+│   │   │   ├── Toast.jsx             # Toast notification component
+│   │   │   └── Toast.css
+│   │   ├── features/
+│   │   │   ├── account/
+│   │   │   │   ├── AccountPage.jsx       # User account management
+│   │   │   │   └── AccountSettings.jsx   # Password & settings
+│   │   │   ├── admin/
+│   │   │   │   └── AdminPage.jsx         # Admin dashboard
+│   │   │   ├── auth/
+│   │   │   │   ├── authSlice.js          # Redux auth state
+│   │   │   │   ├── CitizenLoginPage.jsx  # Citizen login
+│   │   │   │   ├── DepartmentLoginPage.jsx
+│   │   │   │   └── LoginPage.jsx         # Admin login
+│   │   │   ├── chat/
+│   │   │   │   ├── ChatPage.jsx          # AI chat interface
+│   │   │   │   └── chatSlice.js          # Redux chat state
+│   │   │   ├── citizen/
+│   │   │   │   ├── CitizenHomePage.jsx   # Citizen main page
+│   │   │   │   ├── CitizenIssueForm.jsx  # Quick issue form
+│   │   │   │   ├── CitizenMyIssues.jsx   # User's complaints
+│   │   │   │   └── QuickReportPage.jsx   # Standalone form page
+│   │   │   ├── department/
+│   │   │   │   └── DepartmentHomePage.jsx # Department dashboard
+│   │   │   └── issues/
+│   │   │       └── issuesSlice.js        # Redux issues state
+│   │   ├── lib/
+│   │   │   └── apiClient.js          # Axios instance configuration
+│   │   ├── pages/
+│   │   │   ├── DashboardPage.jsx     # Public analytics dashboard
+│   │   │   └── LandingPage.jsx       # Public landing page
+│   │   ├── styles/
+│   │   │   ├── AccountPage.css
+│   │   │   ├── AccountSettings.css
+│   │   │   ├── AdminPage.css
+│   │   │   ├── App.css               # Global styles
+│   │   │   ├── ChatPage.css
+│   │   │   ├── CitizenHomePage.css
+│   │   │   ├── CitizenIssueForm.css
+│   │   │   ├── CitizenMyIssues.css
+│   │   │   ├── DashboardPage.css
+│   │   │   ├── DepartmentHomePage.css
+│   │   │   ├── LandingPage.css
+│   │   │   └── LoginPage.css
+│   │   ├── App.jsx                   # Main app with routing
+│   │   ├── main.jsx                  # React entry point
+│   │   └── store.js                  # Redux store configuration
 │   ├── index.html
-│   ├── vite.config.mts
+│   ├── vite.config.mts               # Vite configuration
 │   └── package.json
 │
+├── .gitignore
 └── README.md
 ```
 
